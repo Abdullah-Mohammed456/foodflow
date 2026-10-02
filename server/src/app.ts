@@ -3,6 +3,7 @@ import express from "express";
 import { getEnv } from "./config/env.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
   );
 
   app.use("/health", healthRouter);
+  app.use("/api/auth", authRouter);
 
   app.use(notFound);
   app.use(errorHandler);

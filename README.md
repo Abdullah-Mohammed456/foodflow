@@ -1,7 +1,7 @@
 # FoodFlow (M1 — Foundation)
 
-Full-stack restaurant ordering platform. Specs live in `reports-markdown-files/`
-(`MASTER-PLAN.md`, `MILESTONES.md`, `IMPLEMENTATION-M*.md`).
+Single-brand fast-food restaurant ordering platform (pizza, burgers, sandwiches, fries & sides, chicken, drinks, desserts, combos & deals). Specs live in `markdown-files/`
+(`MASTER-PLAN.md`, `MILESTONES.md`, `IMPLEMENTATION-M*.md`). Any agent working in this repo must treat it as fast food — not generic restaurant food.
 
 ## Layout
 
@@ -30,9 +30,12 @@ Stop the services with `Ctrl+C`, or run `npm run dev:down` in another terminal.
 The PostgreSQL data remains in a Docker volume between runs.
 
 For standalone local development, copy `server/.env.example` to `server/.env`
-and `client/.env.example` to `client/.env.local`. Set `DATABASE_URL` to the
-Neon pooled URL and `DIRECT_URL` to the direct URL before starting each service
-from its own directory. Use a generated secret for `JWT_ACCESS_SECRET`.
+and `client/.env.example` to `client/.env.local`. Docker uses the local
+PostgreSQL service by default. To use Neon with Docker, edit `server/.env`:
+set `DATABASE_URL` to Neon's pooled URL and `DIRECT_URL` to its direct URL.
+The optional `server/.env` overrides the local defaults in the example file.
+For standalone local development, set both URLs to your database and use a
+generated secret for `JWT_ACCESS_SECRET`.
 ```
 
 ## Checks (M1 exit criteria)

@@ -16,13 +16,11 @@ services:
   server:
     build:
       context: ./server
-    environment:
-      DATABASE_URL: postgresql://foodflow:foodflow@db:5432/foodflow?schema=public
-      DIRECT_URL: postgresql://foodflow:foodflow@db:5432/foodflow?schema=public
-      JWT_ACCESS_SECRET: foodflow-local-development-secret-key-change-before-production
-      FRONTEND_URL: http://localhost:3000
-      NODE_ENV: development
-      PORT: 4000
+      network: host
+    env_file:
+      - path: ./server/.env.example
+      - path: ./server/.env
+        required: false
     ports:
       - "4000:4000"
     depends_on:
@@ -43,6 +41,7 @@ services:
   client:
     build:
       context: ./client
+      network: host
       args:
         NEXT_PUBLIC_API_URL: http://localhost:4000
     environment:
