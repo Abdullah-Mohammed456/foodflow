@@ -3,7 +3,8 @@ import { API_BASE, type HealthData } from "@/lib/api";
 
 async function getServerHealth(): Promise<HealthData | null> {
   try {
-    const res = await fetch(`${API_BASE}/health`, { cache: "no-store" });
+    const apiBase = process.env["API_INTERNAL_URL"] ?? API_BASE;
+    const res = await fetch(`${apiBase}/health`, { cache: "no-store" });
     if (!res.ok) return null;
     const body = (await res.json()) as { success: boolean; data: HealthData };
     return body.success ? body.data : null;

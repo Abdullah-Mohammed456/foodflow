@@ -34,6 +34,10 @@
     "tsx": "^4.19.1",
     "typescript": "^5.6.2"
   },
+  "overrides": {
+    "deepmerge-ts": "^8.0.2",
+    "mysql2": "^3.23.1"
+  },
   "engines": {
     "node": ">=20"
   }

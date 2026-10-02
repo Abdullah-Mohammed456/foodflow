@@ -14,28 +14,36 @@ foodflow/
 
 (`client/` ↔ `server/` implement the M1 `frontend/` ↔ `backend/` split.)
 
-## Quickstart
+## Quickstart with Docker
 
-1. Backend config: copy `server/.env.example` → `server/.env`, set a real
-   `DATABASE_URL` (Neon PostgreSQL), a ≥32-char `JWT_ACCESS_SECRET`.
-2. Frontend config: copy `client/.env.example` → `client/.env.local`
-   (`NEXT_PUBLIC_API_URL`, default `http://localhost:4000`).
-3. Install + run:
+From the repository root, start PostgreSQL, the API, and the web app together:
 
-```powershell
-Set-Location server; npm install; npx prisma migrate dev; npm run dev
-Set-Location ../client; npm install; npm run dev
+```sh
+npm run dev
+```
+
+Open <http://localhost:3000>. The API is available at <http://localhost:4000>;
+`/health` checks that it is running and `/health/ready` also checks PostgreSQL.
+Compose applies the Prisma migrations before starting the API.
+
+Stop the services with `Ctrl+C`, or run `npm run dev:down` in another terminal.
+The PostgreSQL data remains in a Docker volume between runs.
+
+For standalone local development, copy `server/.env.example` to `server/.env`
+and `client/.env.example` to `client/.env.local`. Set `DATABASE_URL` to the
+Neon pooled URL and `DIRECT_URL` to the direct URL before starting each service
+from its own directory. Use a generated secret for `JWT_ACCESS_SECRET`.
 ```
 
 ## Checks (M1 exit criteria)
 
-| Check                        | Backend              | Frontend        |
-| ---------------------------- | -------------------- | --------------- |
-| Starts                       | `npm run dev` (:4000)| `npm run dev` (:3000) |
-| Health                       | `GET /health` (live), `GET /health/ready` (live + DB) | `/` shows server + client probes |
-| Typecheck                    | `npm run typecheck`  | `npm run typecheck` |
-| Lint                         | `npm run lint`       | `npm run lint`  |
-| DB                           | `npx prisma validate` passes / live DB needs `DATABASE_URL` | — |
+| Check     | Backend                                                     | Frontend                         |
+| --------- | ----------------------------------------------------------- | -------------------------------- |
+| Starts    | `npm run dev` (:4000)                                       | `npm run dev` (:3000)            |
+| Health    | `GET /health` (live), `GET /health/ready` (live + DB)       | `/` shows server + client probes |
+| Typecheck | `npm run typecheck`                                         | `npm run typecheck`              |
+| Lint      | `npm run lint`                                              | `npm run lint`                   |
+| DB        | `npx prisma validate` passes / live DB needs `DATABASE_URL` | —                                |
 
 ## Architecture (M1 proof)
 
