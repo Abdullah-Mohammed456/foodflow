@@ -7,13 +7,11 @@ async function main(): Promise<void> {
   const app = createApp();
 
   const server = app.listen(env.PORT, () => {
-    // eslint-disable-next-line no-console
-    console.log(`[foodflow] API listening on :${env.PORT} (${env.NODE_ENV})`);
+    process.stdout.write(`[foodflow] API listening on :${env.PORT} (${env.NODE_ENV})\n`);
   });
 
   const shutdown = async (signal: string): Promise<void> => {
-    // eslint-disable-next-line no-console
-    console.log(`[foodflow] received ${signal}, shutting down...`);
+    process.stdout.write(`[foodflow] received ${signal}, shutting down...\n`);
     server.close();
     await prisma.$disconnect();
     process.exit(0);
@@ -24,7 +22,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
-  console.error("[foodflow] failed to start", err);
+  process.stderr.write(`[foodflow] failed to start ${String(err)}\n`);
   process.exit(1);
 });

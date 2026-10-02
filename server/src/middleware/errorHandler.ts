@@ -1,8 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors/AppError.js";
 
-// Centralized error middleware. Must be registered last in app.ts.
-// Never leaks stack traces, SQL, or Prisma internals to clients.
 export function errorHandler(
   err: unknown,
   _req: Request,
@@ -21,9 +19,7 @@ export function errorHandler(
     return;
   }
 
-  // Log diagnostic info server-side only.
-  // eslint-disable-next-line no-console
-  console.error("[unhandled-error]", err);
+  process.stderr.write(`[unhandled-error] ${String(err)}\n`);
   res.status(500).json({
     success: false,
     error: { code: "INTERNAL_ERROR", message: "Something went wrong" },

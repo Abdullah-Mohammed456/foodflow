@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-// Environment handling: validated once at module load so a bad
-// NEXT_PUBLIC_API_URL fails visibly instead of silently.
 const envSchema = z.object({
   NEXT_PUBLIC_API_URL: z.string().url().default("http://localhost:4000"),
 });
@@ -10,9 +8,11 @@ const parsedEnv = envSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env["NEXT_PUBLIC_API_URL"],
 });
 
-export const API_BASE = parsedEnv.success
-  ? parsedEnv.data.NEXT_PUBLIC_API_URL
-  : "http://localhost:4000";
+if (!parsedEnv.success) {
+  throw new Error("Invalid NEXT_PUBLIC_API_URL configuration");
+}
+
+export const API_BASE = parsedEnv.data.NEXT_PUBLIC_API_URL;
 
 export interface ApiSuccess<T> {
   success: true;
@@ -38,8 +38,6 @@ export class ApiError extends Error {
   }
 }
 
-// Minimal API client abstraction (M1). Cookies are included so the
-// HttpOnly JWT session works without ever touching document.cookie.
 export async function apiFetch<T>(
   path: string,
   init?: RequestInit,

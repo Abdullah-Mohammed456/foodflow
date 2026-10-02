@@ -1,6 +1,3 @@
-// FoodFlow M1 — foundation schema (Neon PostgreSQL).
-// Extended in M2 (auth) / M3 (catalog) / M4 (orders). See SCHEMA.md.
-
 generator client {
   provider = "prisma-client-js"
 }

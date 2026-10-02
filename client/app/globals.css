@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* FoodFlow design tokens (DESIGN.md). Orange Prime brand + neutrals. */
 @theme {
   --color-primary: #f97316;
   --color-primary-hover: #ea580c;

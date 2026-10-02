@@ -3,7 +3,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch, type HealthData } from "@/lib/api";
 
-// Client-side connectivity probe via TanStack Query (server state).
 export function HealthPanel() {
   const query = useQuery({
     queryKey: ["health"],

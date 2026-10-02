@@ -35,7 +35,7 @@ Set-Location ../client; npm install; npm run dev
 | Health                       | `GET /health` (live), `GET /health/ready` (live + DB) | `/` shows server + client probes |
 | Typecheck                    | `npm run typecheck`  | `npm run typecheck` |
 | Lint                         | `npm run lint`       | `npm run lint`  |
-| DB                           | `npx prisma validate` ✅ / live DB needs `DATABASE_URL` | — |
+| DB                           | `npx prisma validate` passes / live DB needs `DATABASE_URL` | — |
 
 ## Architecture (M1 proof)
 
@@ -51,6 +51,6 @@ behind `IHealthRepository`). Shared error envelope:
   is `7.10.0`). Upgrade path: bump `prisma` + `@prisma/client` to 8 when the
   client ships. Prisma 7 config style is already in place (`prisma.config.ts`,
   driver adapter via `@prisma/adapter-pg`).
-- **Live DB not wired**: `/health` ✅, `/health/ready` correctly returns
+- **Live DB not wired**: `/health` responds, `/health/ready` correctly returns
   `DATABASE_ERROR` until a Neon `DATABASE_URL` is provided, then run
   `npx prisma migrate dev`.

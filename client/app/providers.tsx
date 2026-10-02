@@ -3,8 +3,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
-// Client boundary kept explicit: only the Query provider (browser
-// interactivity) is a Client Component. Pages stay Server Components.
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
     () =>

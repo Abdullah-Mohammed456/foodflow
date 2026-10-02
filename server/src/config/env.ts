@@ -22,9 +22,7 @@ export function getEnv(): Env {
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
     const details = parsed.error.flatten().fieldErrors;
-    // Fail fast at startup per AGENTS.md ("validated at startup").
-    // eslint-disable-next-line no-console
-    console.error("Invalid environment configuration:", details);
+    process.stderr.write(`Invalid environment configuration: ${JSON.stringify(details)}\n`);
     throw new Error("Invalid environment configuration");
   }
   cached = parsed.data;

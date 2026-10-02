@@ -1,8 +1,6 @@
 import { HealthPanel } from "@/components/health-panel";
 import { API_BASE, type HealthData } from "@/lib/api";
 
-// Server Component by default (AGENTS.md). Fetches backend health
-// server-side; the live client probe sits in <HealthPanel />.
 async function getServerHealth(): Promise<HealthData | null> {
   try {
     const res = await fetch(`${API_BASE}/health`, { cache: "no-store" });

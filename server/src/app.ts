@@ -17,7 +17,6 @@ export function createApp() {
     }),
   );
 
-  // M1 connectivity probe: GET /health, GET /health/ready (includes DB check).
   app.use("/health", healthRouter);
 
   app.use(notFound);
