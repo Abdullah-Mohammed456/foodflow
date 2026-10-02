@@ -33,6 +33,7 @@ export function createAccessToken(user: {
 export interface AccessTokenClaims {
   id: string;
   role: UserRole;
+  expiresAt: number;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -93,7 +94,7 @@ export function verifyAccessToken(token: string): AccessTokenClaims | null {
       return null;
     }
 
-    return { id: sub, role };
+    return { id: sub, role, expiresAt: exp };
   } catch {
     return null;
   }

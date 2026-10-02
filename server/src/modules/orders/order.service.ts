@@ -2,12 +2,13 @@ import { createHash } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { AppError } from "../../errors/AppError.js";
 import { OrderWriteConflictError, type IOrderRepository, type OrderWithItems } from "./order.repository.js";
+import { notifyOrder, type OrderEvents } from "../realtime/order-events.js";
 import type { CreateOrderInput, OrderQuery } from "./order.schema.js";
 
-function publicOrder(order: OrderWithItems) {
+export function publicOrder(order: OrderWithItems) {
   return {
     id: order.id, publicId: order.publicId, restaurantId: order.restaurantId,
-    orderType: order.orderType, status: order.status,
+    orderType: order.orderType, status: order.status, revision: order.revision, prepDueAt: order.prepDueAt,
     subtotal: order.subtotal, deliveryFee: order.deliveryFee, discount: order.discount, total: order.total,
     notes: order.notes, deliveryAddress: order.deliveryAddress,
     createdAt: order.createdAt, updatedAt: order.updatedAt, items: order.items,
@@ -15,7 +16,7 @@ function publicOrder(order: OrderWithItems) {
 }
 
 export class OrderService {
-  constructor(private readonly repo: IOrderRepository) {}
+  constructor(private readonly repo: IOrderRepository, private readonly events?: OrderEvents) {}
 
   async create(customerId: string, input: CreateOrderInput) {
     const requestHash = createHash("sha256").update(JSON.stringify({
@@ -64,6 +65,7 @@ export class OrderService {
               descriptionSnapshot: item.description,
               sizeSnapshot: variant.size,
               isComboSnapshot: item.isCombo,
+              prepTimeMinutesSnapshot: item.prepTimeMinutes,
               unitPrice,
               quantity: line.quantity,
               lineTotal: unitPrice.mul(line.quantity),
@@ -71,14 +73,17 @@ export class OrderService {
           });
           const subtotal = items.reduce((sum, item) => sum.plus(item.lineTotal), new Prisma.Decimal(0));
           if (subtotal.gt("99999999.99")) throw new AppError("VALIDATION_ERROR", "Order total exceeds the supported limit");
+          const createdAt = new Date();
+          const prepDueAt = new Date(createdAt.getTime() + Math.max(...items.map((item) => item.prepTimeMinutesSnapshot)) * 60_000);
           const order = await repo.create({
             customerId, restaurantId: restaurant.id, checkoutKey: input.checkoutKey, requestHash,
             orderType: input.orderType, notes: input.notes, deliveryAddress: input.deliveryAddress,
-            subtotal, deliveryFee: 0, discount: 0, total: subtotal,
+            subtotal, deliveryFee: 0, discount: 0, total: subtotal, createdAt, prepDueAt,
             items: { create: items },
           });
           return { order: publicOrder(order), replayed: false };
         });
+        if (!result.replayed) await notifyOrder(this.events, "order.created", { ...result.order, customerId });
         return result;
       } catch (error) {
         if (!(error instanceof OrderWriteConflictError)) throw error;
@@ -103,7 +108,11 @@ export class OrderService {
   }
 
   async cancel(customerId: string, publicId: string) {
-    if (await this.repo.cancelPending(customerId, publicId)) return this.detail(customerId, publicId);
+    const cancelled = await this.repo.cancelPending(customerId, publicId);
+    if (cancelled) {
+      await notifyOrder(this.events, "order.cancelled", cancelled);
+      return publicOrder(cancelled);
+    }
     const order = await this.detail(customerId, publicId);
     if (order.status === "CANCELLED") return order;
     throw new AppError("CONFLICT", "Only pending orders can be cancelled");

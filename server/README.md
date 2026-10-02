@@ -1,8 +1,22 @@
 # FoodFlow Backend
 
-The API implements authentication, catalog management, and M4 customer ordering.
-The frontend remains at its foundation stage. Kitchen status controls and realtime
-updates belong to M5.
+The API implements authentication, catalog management, M4 customer ordering,
+and M5 kitchen operations with Socket.IO. The frontend remains at its foundation
+stage. See [REALTIME.md](REALTIME.md) for the M5 implementation walkthrough,
+socket authentication, event contracts, kitchen routes, and reconnection policy.
+
+## Authentication limits
+
+Registration is limited to five attempts per IP address each hour. Login is
+limited to five failed attempts per IP address in 15 minutes; successful logins
+do not consume that allowance. The API returns `429` with error code
+`RATE_LIMITED` and standard `RateLimit` headers when a limit is reached.
+
+Set `TRUST_PROXY="true"` only when the server is behind a trusted reverse proxy
+that supplies the client IP. The default is `false` for local Docker. The four
+`AUTH_*` environment variables in `.env.example` adjust the two windows and
+limits without code changes. The default in-memory store applies per running
+server process; production horizontal scaling needs a shared rate-limit store.
 
 ## M4 database setup
 
@@ -101,8 +115,7 @@ positive quantities and unit prices, correct line totals, nonnegative order
 amounts, and `total = subtotal + deliveryFee - discount`.
 
 Customers can cancel only `PENDING` orders. The update checks customer ownership
-and status atomically. Kitchen confirmation and later status transitions are
-reserved for M5.
+and status atomically. Kitchen confirmation and later status transitions use the authenticated M5 kitchen API.
 
 ## Verification
 
@@ -125,3 +138,7 @@ TEST_DATABASE_URL=postgresql://USER@127.0.0.1:PORT/foodflow_m4_test npm test
 The integration suite covers pricing, tampering, authentication, ownership,
 availability, delivery, history, snapshot preservation, concurrent checkout
 retries, cancellation, transaction rollback, and financial database constraints.
+
+Authentication integration tests additionally cover registration without email
+enumeration, password verification, the HttpOnly cookie, protected profile
+routes, logout, role denial, and the login limit.

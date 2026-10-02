@@ -1,18 +1,18 @@
-import { createApp } from "./app.js";
+import { createBackendServer } from "./http-server.js";
 import { getEnv } from "./config/env.js";
 import { prisma } from "./lib/prisma.js";
 
 async function main(): Promise<void> {
   const env = getEnv();
-  const app = createApp();
+  const { server, realtime } = createBackendServer();
 
-  const server = app.listen(env.PORT, () => {
+  server.listen(env.PORT, () => {
     process.stdout.write(`[foodflow] API listening on :${env.PORT} (${env.NODE_ENV})\n`);
   });
 
   const shutdown = async (signal: string): Promise<void> => {
     process.stdout.write(`[foodflow] received ${signal}, shutting down...\n`);
-    server.close();
+    await realtime.close();
     await prisma.$disconnect();
     process.exit(0);
   };

@@ -6,8 +6,9 @@ Single-brand fast-food restaurant ordering platform (pizza, burgers, sandwiches,
 ## Current progress
 
 The backend implements authentication, catalog management, and M4 customer
-ordering. The frontend remains the M1 connectivity page. Kitchen/realtime,
-analytics, and production deployment are planned milestones. See
+ordering, plus M5 kitchen operations and Socket.IO notifications. The frontend
+remains the M1 connectivity page. Kitchen/customer realtime interfaces, analytics,
+and production deployment are planned work. See
 `server/README.md` for the customer order API, pricing policy, migration setup,
 and integration test instructions.
 

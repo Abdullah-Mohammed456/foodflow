@@ -2,6 +2,7 @@ export type ErrorCode =
   | "VALIDATION_ERROR"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
+  | "RATE_LIMITED"
   | "NOT_FOUND"
   | "CONFLICT"
   | "INTERNAL_ERROR"
@@ -11,6 +12,7 @@ const statusByCode: Record<ErrorCode, number> = {
   VALIDATION_ERROR: 400,
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,
+  RATE_LIMITED: 429,
   NOT_FOUND: 404,
   CONFLICT: 409,
   INTERNAL_ERROR: 500,

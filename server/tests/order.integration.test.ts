@@ -212,7 +212,7 @@ test("M4 orders API with isolated PostgreSQL", { skip: !databaseUrl }, async (t)
     await assert.rejects(prisma.$transaction(async (tx) => {
       await tx.order.create({ data: {
         customerId: "customer", restaurantId: "branch", checkoutKey: randomUUID(), requestHash: "test",
-        orderType: "TAKEAWAY", subtotal: "10.10", total: "10.10",
+        orderType: "TAKEAWAY", subtotal: "10.10", total: "10.10", prepDueAt: new Date(),
         items: { create: { menuItemId: "burger", nameSnapshot: "burger", unitPrice: "10.10", quantity: 0, lineTotal: "0" } },
       } });
     }));

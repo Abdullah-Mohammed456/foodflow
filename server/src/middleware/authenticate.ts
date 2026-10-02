@@ -3,8 +3,7 @@ import { AppError } from "../errors/AppError.js";
 import { ACCESS_COOKIE } from "../modules/auth/auth-cookie.js";
 import { verifyAccessToken } from "../modules/auth/access-token.js";
 
-function readAccessCookie(req: Request): string | null {
-  const cookieHeader = req.get("cookie");
+export function readAccessCookie(cookieHeader: string | undefined): string | null {
   if (!cookieHeader) return null;
 
   let token: string | null = null;
@@ -28,7 +27,7 @@ export function authenticate(
   _res: Response,
   next: NextFunction,
 ): void {
-  const token = readAccessCookie(req);
+  const token = readAccessCookie(req.get("cookie"));
   const claims = token ? verifyAccessToken(token) : null;
   if (!claims) {
     next(new AppError("UNAUTHORIZED", "Authentication required"));

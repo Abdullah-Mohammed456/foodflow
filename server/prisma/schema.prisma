@@ -161,6 +161,8 @@ model Order {
   restaurantId String
   orderType    OrderType
   status       OrderStatus @default(PENDING)
+  revision     Int         @default(0)
+  prepDueAt    DateTime
   subtotal     Decimal     @db.Decimal(10, 2)
   deliveryFee  Decimal     @default(0) @db.Decimal(10, 2)
   discount     Decimal     @default(0) @db.Decimal(10, 2)
@@ -179,6 +181,7 @@ model Order {
   @@unique([customerId, checkoutKey])
   @@index([customerId, createdAt])
   @@index([restaurantId, status, createdAt])
+  @@index([restaurantId, status, prepDueAt])
   @@map("orders")
 }
 
@@ -191,6 +194,7 @@ model OrderItem {
   descriptionSnapshot String?
   sizeSnapshot        MenuItemSize?
   isComboSnapshot     Boolean       @default(false)
+  prepTimeMinutesSnapshot Int       @default(15)
   unitPrice           Decimal       @db.Decimal(10, 2)
   quantity            Int
   lineTotal           Decimal       @db.Decimal(10, 2)
