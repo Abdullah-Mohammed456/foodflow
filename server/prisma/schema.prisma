@@ -35,6 +35,12 @@ enum MenuItemSize {
   REGULAR
 }
 
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -45,6 +51,7 @@ model User {
   updatedAt    DateTime @updatedAt
 
   memberships RestaurantMember[]
+  orders      Order[]
 
   @@map("users")
 }
@@ -59,9 +66,10 @@ model Restaurant {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members RestaurantMember[]
+  members    RestaurantMember[]
   categories Category[]
-  menuItems MenuItem[]
+  menuItems  MenuItem[]
+  orders     Order[]
 
   @@index([slug])
   @@map("restaurants")
@@ -94,7 +102,7 @@ model Category {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   menuItems  MenuItem[]
 
   @@unique([restaurantId, slug])
@@ -104,23 +112,24 @@ model Category {
 }
 
 model MenuItem {
-  id               String   @id @default(cuid())
-  restaurantId     String
-  categoryId       String
-  name             String
-  slug             String
-  description      String?
-  imageUrl         String?
-  isCombo          Boolean  @default(false)
-  isSpicy          Boolean  @default(false)
-  prepTimeMinutes  Int
-  isAvailable      Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String   @id @default(cuid())
+  restaurantId    String
+  categoryId      String
+  name            String
+  slug            String
+  description     String?
+  imageUrl        String?
+  isCombo         Boolean  @default(false)
+  isSpicy         Boolean  @default(false)
+  prepTimeMinutes Int
+  isAvailable     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  restaurant Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  category   Category           @relation(fields: [categoryId, restaurantId], references: [id, restaurantId], onDelete: Restrict)
+  restaurant Restaurant        @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category   Category          @relation(fields: [categoryId, restaurantId], references: [id, restaurantId], onDelete: Restrict)
   variants   MenuItemVariant[]
+  orderItems OrderItem[]
 
   @@unique([restaurantId, slug])
   @@index([restaurantId, isAvailable])
@@ -129,17 +138,69 @@ model MenuItem {
 }
 
 model MenuItemVariant {
-  id         String       @id @default(cuid())
-  menuItemId String
-  size       MenuItemSize
-  price      Decimal      @db.Decimal(10, 2)
-  isAvailable Boolean     @default(true)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id          String       @id @default(cuid())
+  menuItemId  String
+  size        MenuItemSize
+  price       Decimal      @db.Decimal(10, 2)
+  isAvailable Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem    @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
 
   @@unique([menuItemId, size])
   @@index([menuItemId, isAvailable])
   @@map("menu_item_variants")
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  publicId     String      @unique @default(cuid())
+  customerId   String
+  restaurantId String
+  orderType    OrderType
+  status       OrderStatus @default(PENDING)
+  subtotal     Decimal     @db.Decimal(10, 2)
+  deliveryFee  Decimal     @default(0) @db.Decimal(10, 2)
+  discount     Decimal     @default(0) @db.Decimal(10, 2)
+  total        Decimal     @db.Decimal(10, 2)
+  notes        String?
+  deliveryAddress String?
+  checkoutKey String
+  requestHash String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  customer   User        @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Restrict)
+  items      OrderItem[]
+
+  @@unique([customerId, checkoutKey])
+  @@index([customerId, createdAt])
+  @@index([restaurantId, status, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                  String        @id @default(cuid())
+  orderId             String
+  menuItemId          String
+  menuItemVariantId   String?
+  nameSnapshot        String
+  descriptionSnapshot String?
+  sizeSnapshot        MenuItemSize?
+  isComboSnapshot     Boolean       @default(false)
+  unitPrice           Decimal       @db.Decimal(10, 2)
+  quantity            Int
+  lineTotal           Decimal       @db.Decimal(10, 2)
+  createdAt           DateTime      @default(now())
+
+  order           Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem        MenuItem         @relation(fields: [menuItemId], references: [id], onDelete: Restrict)
+  menuItemVariant MenuItemVariant? @relation(fields: [menuItemVariantId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@map("order_items")
 }

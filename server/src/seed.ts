@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { MenuItemSize, PrismaClient, RestaurantRole } from "@prisma/client";
+import { MenuItemSize, Prisma, PrismaClient, RestaurantRole } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import { z } from "zod";
@@ -163,7 +163,7 @@ const menu = [
 ] as const;
 
 async function seed(): Promise<void> {
-  await prisma.$transaction(async (tx: any) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const restaurant = await tx.restaurant.upsert({
       where: { slug: "foodflow" },
       create: {

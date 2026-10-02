@@ -1,7 +1,15 @@
-# FoodFlow (M1 — Foundation)
+# FoodFlow
 
 Single-brand fast-food restaurant ordering platform (pizza, burgers, sandwiches, fries & sides, chicken, drinks, desserts, combos & deals). Specs live in `markdown-files/`
 (`MASTER-PLAN.md`, `MILESTONES.md`, `IMPLEMENTATION-M*.md`). Any agent working in this repo must treat it as fast food — not generic restaurant food.
+
+## Current progress
+
+The backend implements authentication, catalog management, and M4 customer
+ordering. The frontend remains the M1 connectivity page. Kitchen/realtime,
+analytics, and production deployment are planned milestones. See
+`server/README.md` for the customer order API, pricing policy, migration setup,
+and integration test instructions.
 
 ## Layout
 

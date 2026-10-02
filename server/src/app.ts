@@ -5,6 +5,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { notFound } from "./middleware/notFound.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { catalogRouter } from "./modules/catalog/catalog.routes.js";
+import { orderRouter } from "./modules/orders/order.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 
 export function createApp() {
@@ -22,6 +23,8 @@ export function createApp() {
   app.use("/health", healthRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/restaurants", catalogRouter);
+
+  app.use("/api/orders", orderRouter);
 
   app.use(notFound);
   app.use(errorHandler);
