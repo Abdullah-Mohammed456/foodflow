@@ -4,8 +4,13 @@ import {
   DuplicateEmailError,
   type AuthProfile,
   type IAuthRepository,
+  UserNotFoundError,
 } from "./auth.repository.js";
-import type { LoginInput, RegisterInput } from "./auth.schema.js";
+import type {
+  LoginInput,
+  ProfileUpdateInput,
+  RegisterInput,
+} from "./auth.schema.js";
 
 const DUMMY_PASSWORD_HASH = hashPassword("foodflow-auth-timing-dummy-password");
 
@@ -53,6 +58,23 @@ export class AuthService {
       throw new AppError("UNAUTHORIZED", "Authentication required");
     }
     return this.toSafeUser(user);
+  }
+
+  async updateProfile(
+    id: string,
+    input: ProfileUpdateInput,
+  ): Promise<SafeUser> {
+    try {
+      return this.toSafeUser(await this.repo.updateProfile(id, input));
+    } catch (error) {
+      if (error instanceof DuplicateEmailError) {
+        throw new AppError("CONFLICT", "Email is already in use");
+      }
+      if (error instanceof UserNotFoundError) {
+        throw new AppError("UNAUTHORIZED", "Authentication required");
+      }
+      throw error;
+    }
   }
 
   private toSafeUser(user: AuthProfile): SafeUser {

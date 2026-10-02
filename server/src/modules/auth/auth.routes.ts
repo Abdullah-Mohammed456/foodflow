@@ -15,3 +15,4 @@ authRouter.post("/register", controller.register);
 authRouter.post("/login", controller.login);
 authRouter.post("/logout", controller.logout);
 authRouter.get("/me", authenticate, controller.me);
+authRouter.patch("/me", authenticate, controller.updateMe);
