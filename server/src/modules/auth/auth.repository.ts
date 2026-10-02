@@ -1,4 +1,9 @@
-import { Prisma, type PrismaClient, type UserRole } from "@prisma/client";
+import {
+  Prisma,
+  type PrismaClient,
+  type RestaurantRole,
+  type UserRole,
+} from "@prisma/client";
 import type { ProfileUpdateInput } from "./auth.schema.js";
 
 export interface AuthUser {
@@ -16,6 +21,10 @@ export interface IAuthRepository {
   findByEmail(email: string): Promise<AuthUser | null>;
   findById(id: string): Promise<AuthProfile | null>;
   updateProfile(id: string, input: ProfileUpdateInput): Promise<AuthProfile>;
+  findRestaurantRole(
+    userId: string,
+    restaurantId: string,
+  ): Promise<RestaurantRole | null>;
 }
 
 export class DuplicateEmailError extends Error {
@@ -90,5 +99,16 @@ export class PrismaAuthRepository implements IAuthRepository {
       }
       throw error;
     }
+  }
+
+  async findRestaurantRole(
+    userId: string,
+    restaurantId: string,
+  ): Promise<RestaurantRole | null> {
+    const membership = await this.db.restaurantMember.findUnique({
+      where: { userId_restaurantId: { userId, restaurantId } },
+      select: { role: true },
+    });
+    return membership?.role ?? null;
   }
 }

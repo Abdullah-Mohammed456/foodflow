@@ -26,6 +26,15 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum MenuItemSize {
+  SMALL
+  MEDIUM
+  LARGE
+  SINGLE
+  DOUBLE
+  REGULAR
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -51,6 +60,8 @@ model Restaurant {
   updatedAt   DateTime @updatedAt
 
   members RestaurantMember[]
+  categories Category[]
+  menuItems MenuItem[]
 
   @@index([slug])
   @@map("restaurants")
@@ -70,4 +81,65 @@ model RestaurantMember {
   @@index([userId])
   @@index([restaurantId])
   @@map("restaurant_members")
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  slug         String
+  description  String?
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItems  MenuItem[]
+
+  @@unique([restaurantId, slug])
+  @@unique([id, restaurantId])
+  @@index([restaurantId, isActive, sortOrder])
+  @@map("categories")
+}
+
+model MenuItem {
+  id               String   @id @default(cuid())
+  restaurantId     String
+  categoryId       String
+  name             String
+  slug             String
+  description      String?
+  imageUrl         String?
+  isCombo          Boolean  @default(false)
+  isSpicy          Boolean  @default(false)
+  prepTimeMinutes  Int
+  isAvailable      Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  restaurant Restaurant         @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category   Category           @relation(fields: [categoryId, restaurantId], references: [id, restaurantId], onDelete: Restrict)
+  variants   MenuItemVariant[]
+
+  @@unique([restaurantId, slug])
+  @@index([restaurantId, isAvailable])
+  @@index([restaurantId, categoryId, isAvailable])
+  @@map("menu_items")
+}
+
+model MenuItemVariant {
+  id         String       @id @default(cuid())
+  menuItemId String
+  size       MenuItemSize
+  price      Decimal      @db.Decimal(10, 2)
+  isAvailable Boolean     @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([menuItemId, size])
+  @@index([menuItemId, isAvailable])
+  @@map("menu_item_variants")
 }
