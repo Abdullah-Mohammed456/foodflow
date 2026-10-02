@@ -8,9 +8,12 @@ export interface AuthUser {
   role: UserRole;
 }
 
+export type AuthProfile = Omit<AuthUser, "passwordHash">;
+
 export interface IAuthRepository {
   create(input: { email: string; name: string; passwordHash: string }): Promise<void>;
   findByEmail(email: string): Promise<AuthUser | null>;
+  findById(id: string): Promise<AuthProfile | null>;
 }
 
 export class DuplicateEmailError extends Error {
@@ -51,6 +54,13 @@ export class PrismaAuthRepository implements IAuthRepository {
         passwordHash: true,
         role: true,
       },
+    });
+  }
+
+  findById(id: string): Promise<AuthProfile | null> {
+    return this.db.user.findUnique({
+      where: { id },
+      select: { id: true, email: true, name: true, role: true },
     });
   }
 }
