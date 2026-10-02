@@ -5,11 +5,12 @@ import { ACCESS_TOKEN_TTL_SECONDS } from "./access-token.js";
 export const ACCESS_COOKIE = "foodflow_access";
 
 function cookieAttributes(): string[] {
+  const production = getEnv().NODE_ENV === "production";
   return [
     "Path=/api",
     "HttpOnly",
-    "SameSite=Lax",
-    ...(getEnv().NODE_ENV === "production" ? ["Secure"] : []),
+    production ? "SameSite=None" : "SameSite=Lax",
+    ...(production ? ["Secure"] : []),
   ];
 }
 

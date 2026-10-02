@@ -234,7 +234,7 @@ async function seed(): Promise<void> {
         update: { role: RestaurantRole.OWNER },
       });
     }
-  });
+  }, { timeout: 30000 });
   process.stdout.write("FoodFlow catalog seed completed\n");
 }
 

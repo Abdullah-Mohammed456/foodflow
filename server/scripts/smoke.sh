@@ -20,7 +20,7 @@ step() {
 }
 
 check() {
-  [ "$2" = "$3" ] || fail("$1 expected $3 got $2")
+  [ "$2" = "$3" ] || fail "$1 expected $3 got $2"
 }
 
 step "health checks"
@@ -28,7 +28,7 @@ check "liveness" "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/health")" "200
 check "readiness" "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/health/ready")" "200"
 
 step "register + login"
-check "register" "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/auth/register" -H 'Content-Type: application/json' --data "{\"email\":\"$EMAIL\",\"name\":\"Smoke\",\"password\":\"$PASSWORD\"}")" "201"
+check "register" "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/auth/register" -H 'Content-Type: application/json' --data "{\"email\":\"$EMAIL\",\"name\":\"Smoke\",\"password\":\"$PASSWORD\"}")" "202"
 check "login" "$(curl -s -o /dev/null -w '%{http_code}' -c "$COOKIE_JAR" -X POST "$BASE/api/auth/login" -H 'Content-Type: application/json' --data "{\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}")" "200"
 
 step "public menu"

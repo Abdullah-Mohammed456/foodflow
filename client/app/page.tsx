@@ -1,3 +1,4 @@
+import { FastFoodHero } from "@/components/fast-food-hero";
 import { HealthPanel } from "@/components/health-panel";
 import { API_BASE, type HealthData } from "@/lib/api";
 
@@ -17,7 +18,8 @@ export default async function HomePage() {
   const serverHealth = await getServerHealth();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-6 py-16">
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-6 py-16">
+      <FastFoodHero />
       <header className="flex flex-col gap-2">
         <p className="text-sm font-medium tracking-wide text-neutral-500">
           M1 · Foundation
