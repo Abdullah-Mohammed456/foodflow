@@ -5,15 +5,21 @@ Single-brand fast-food restaurant ordering platform (pizza, burgers, sandwiches,
 
 ## Current progress
 
-The backend implements authentication, catalog management, and M4 customer
-ordering, plus M5 kitchen operations and Socket.IO notifications. M6 admin
-analytics and staff management and M7 backend hardening (helmet, request
-IDs, origin checks, API rate limits, production Dockerfile, Render config,
-smoke script) are implemented on the API. The frontend
-remains the M1 connectivity page. Kitchen/customer realtime interfaces, analytics
-and manager dashboards, and production deployment are planned work. See
-`server/README.md` for the customer order API, pricing policy, migration setup,
-and integration test instructions.
+The MVP client now includes the photo-led FoodFlow landing page, public menu,
+account registration and profile, cart, checkout, order history and live status,
+kitchen queue, and manager analytics, catalog, staff, and settings. It uses the
+M1–M7 backend APIs; prices, permissions, totals, and order state remain server
+authoritative. Customer and kitchen screens refetch after Socket.IO events and
+poll when disconnected. The M1 connectivity probe remains in the landing
+page's “Connection status” disclosure. See `server/README.md` for API and
+migration details.
+
+Production rollout to Vercel, Render, and Neon is intentionally pending. The
+repository owner chose to review and connect the real project URLs after this
+GitHub push. Set `NEXT_PUBLIC_API_URL` on Vercel to the Render API URL, and
+`FRONTEND_URL` on Render to the Vercel origin. Keep Neon credentials and JWT
+secrets in the platforms' secret managers, run migrations and the catalog seed,
+then perform the production smoke test documented in `server/README.md`.
 
 ## Layout
 
@@ -61,15 +67,25 @@ For standalone local development, set both URLs to your database and use a
 generated secret for `JWT_ACCESS_SECRET`.
 ```
 
-## Checks (M1 exit criteria)
+## Checks
 
 | Check     | Backend                                                     | Frontend                         |
 | --------- | ----------------------------------------------------------- | -------------------------------- |
 | Starts    | `npm run dev` (:4000)                                       | `npm run dev` (:3000)            |
-| Health    | `GET /health` (live), `GET /health/ready` (live + DB)       | `/` shows server + client probes |
+| Health    | `GET /health` (live), `GET /health/ready` (live + DB)       | `/` has a connection disclosure |
 | Typecheck | `npm run typecheck`                                         | `npm run typecheck`              |
 | Lint      | `npm run lint`                                              | `npm run lint`                   |
 | DB        | `npx prisma validate` passes / live DB needs `DATABASE_URL` | —                                |
+
+With the isolated local database `foodflow_m4_test`, run the backend integration
+suite using `TEST_DATABASE_URL`. These tests rebuild its `public` schema and
+must never point to a database containing valuable data. The client production
+build uses `npm run build` with webpack on hosts where Turbopack workers cannot
+bind a local port.
+
+The landing's photography is composed of user-supplied images in
+`foodflow-mockups/` and real food photos from Pexels; local copies live in
+`client/public/food/`. The interface copy is in English.
 
 ## Architecture (M1 proof)
 

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
@@ -69,6 +70,17 @@ test("M2 authentication API", { skip: !databaseUrl }, async (t) => {
   await t.test("protected profile routes validate the token and update the current user", async () => {
     assert.equal((await request("/me")).response.status, 401);
     assert.equal((await request("/me", undefined, "foodflow_access=invalid")).response.status, 401);
+    const [header, payload] = accessCookie.slice("foodflow_access=".length).split(".");
+    const expiredPayload = Buffer.from(JSON.stringify({
+      ...JSON.parse(Buffer.from(payload!, "base64url").toString("utf8")),
+      iat: 1,
+      exp: 2,
+    })).toString("base64url");
+    const expiredUnsigned = `${header}.${expiredPayload}`;
+    const expiredSignature = createHmac("sha256", process.env["JWT_ACCESS_SECRET"]!)
+      .update(expiredUnsigned)
+      .digest("base64url");
+    assert.equal((await request("/me", undefined, `foodflow_access=${expiredUnsigned}.${expiredSignature}`)).response.status, 401);
     const profile = await request("/me", undefined, accessCookie);
     assert.equal(profile.response.status, 200);
     const update = await fetch(`${baseUrl}/me`, {
