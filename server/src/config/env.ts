@@ -16,6 +16,12 @@ const envSchema = z.object({
   AUTH_LOGIN_LIMIT: z.coerce.number().int().min(1).max(100).default(5),
   AUTH_REGISTER_WINDOW_MS: z.coerce.number().int().min(1_000).default(60 * 60 * 1_000),
   AUTH_REGISTER_LIMIT: z.coerce.number().int().min(1).max(100).default(5),
+  API_GENERAL_WINDOW_MS: z.coerce.number().int().min(1_000).default(60 * 1_000),
+  API_GENERAL_LIMIT: z.coerce.number().int().min(10).max(10000).default(600),
+  API_CHECKOUT_WINDOW_MS: z.coerce.number().int().min(1_000).default(60 * 1_000),
+  API_CHECKOUT_LIMIT: z.coerce.number().int().min(5).max(1000).default(60),
+  API_ADMIN_WINDOW_MS: z.coerce.number().int().min(1_000).default(60 * 1_000),
+  API_ADMIN_LIMIT: z.coerce.number().int().min(10).max(1000).default(120),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

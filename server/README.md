@@ -142,3 +142,56 @@ retries, cancellation, transaction rollback, and financial database constraints.
 Authentication integration tests additionally cover registration without email
 enumeration, password verification, the HttpOnly cookie, protected profile
 routes, logout, role denial, and the login limit.
+
+## M6 admin analytics and staff (backend)
+
+All routes require the `foodflow_access` cookie and current restaurant
+membership. Analytics accept `OWNER` or `MANAGER`; staff mutations require
+`OWNER`. The global `ADMIN` role alone grants nothing without membership.
+
+- `GET /api/restaurants/:restaurantId/admin/overview?from&to`: totals,
+  revenue excluding cancelled orders, average order value, active queue,
+  completed count, average fulfillment minutes, breakdowns by status and
+  order type. Date range is limited to 90 days.
+- `GET /api/restaurants/:restaurantId/admin/revenue?granularity=day|hour&from&to`:
+  revenue buckets with order counts, cancelled orders excluded.
+- `GET /api/restaurants/:restaurantId/admin/popular-items?limit&from&to`:
+  top items by quantity with revenue, category, and combo flag.
+- `GET /api/restaurants/:restaurantId/admin/rush?days=1..30`: orders per
+  UTC hour plus the peak hour.
+- `GET /api/restaurants/:restaurantId/admin/staff`: list members.
+- `POST /api/restaurants/:restaurantId/admin/staff`: add by email with an
+  explicit `OWNER`, `MANAGER`, or `KITCHEN` role. Unknown emails return
+  `404`; duplicates return `409`.
+- `PATCH /api/restaurants/:restaurantId/admin/staff/:memberId`: change role.
+- `DELETE /api/restaurants/:restaurantId/admin/staff/:memberId`: remove.
+
+Demoting or removing the last `OWNER` returns `409`. Restaurant open/closed
+and catalog settings remain on the existing manager catalog API; delivery
+zones and fee configuration are still future work.
+
+## M7 security and deployment (backend)
+
+- `helmet` headers enabled, `x-powered-by` disabled, `x-request-id` set on
+  every response and included in JSON request logs. Logs contain method,
+  path, status, and duration only.
+- CORS allows only `FRONTEND_URL` with credentials. State-changing
+  `/api/*` requests carrying a foreign `Origin` or `Referer` return `403`.
+  Socket.IO already enforces the same origin at `/api/socket.io`.
+- Rate limits: strict auth limits plus general (600/min), checkout
+  (60/min), and admin analytics (120/min) limiters with the standard
+  `429` envelope. General limiters are skipped when `NODE_ENV=test`.
+  Configure windows and limits through the `API_*` variables in
+  `.env.example`; horizontal scaling still needs a shared store.
+- `server/Dockerfile` builds a production image (`prisma migrate deploy`
+  then `node dist/server.js`). Local compose targets the `build` stage
+  for `npm run dev`. `render.yaml` deploys the API with `/health/ready`
+  checks and `TRUST_PROXY=true` behind Render.
+- Production smoke test without client code:
+
+```sh
+./scripts/smoke.sh https://api.example.com
+```
+
+It covers health, register, login, public menu, admin denial, origin
+denial, and security headers.

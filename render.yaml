@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: foodflow-server
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    healthCheckPath: /health/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: FRONTEND_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: TRUST_PROXY
+        value: "true"
+
+databases:
+  - name: foodflow-db
+    databaseName: foodflow
+    user: foodflow

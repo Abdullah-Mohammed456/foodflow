@@ -17,6 +17,7 @@ services:
     build:
       context: ./server
       network: host
+      target: build
     env_file:
       - path: ./server/.env.example
       - path: ./server/.env
