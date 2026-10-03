@@ -54,7 +54,7 @@ export function HorizontalCategories() {
     const ctx = gsap.context(() => {
       const track = root.current!.querySelector<HTMLElement>(".film-track");
       if (!track) return;
-      gsap.to(track, { xPercent: -100 * (CATEGORY_ORDER.length - 1), ease: "none", scrollTrigger: { trigger: root.current, start: "top top", end: () => `+=${window.innerWidth * (CATEGORY_ORDER.length - 1)}`, pin: true, scrub: .8, invalidateOnRefresh: true, snap: { snapTo: 1 / (CATEGORY_ORDER.length - 1), duration: .25 } } });
+      gsap.to(track, { x: () => -(track.scrollWidth - window.innerWidth), ease: "none", scrollTrigger: { trigger: root.current, start: "top top", end: () => `+=${track.scrollWidth - window.innerWidth}`, pin: true, scrub: .8, invalidateOnRefresh: true, snap: { snapTo: 1 / (CATEGORY_ORDER.length - 1), duration: .25 } } });
     }, root);
     return () => ctx.revert();
   }, []);

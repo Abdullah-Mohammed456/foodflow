@@ -31,5 +31,5 @@ export function useStaffAccess() {
   const id = restaurant.data?.id;
   const kitchen = useQuery({ queryKey: ["staff-kitchen-access", id, user.data?.id], queryFn: () => apiFetch<Page<Order>>(`/api/restaurants/${id}/kitchen/orders?limit=1`), enabled: !!user.data && !!id, retry: false, staleTime: 300000 });
   const manager = useQuery({ queryKey: ["staff-manager-access", id, user.data?.id], queryFn: () => apiFetch(`/api/restaurants/${id}/admin/staff`), enabled: !!user.data && !!id, retry: false, staleTime: 300000 });
-  return { canUseKitchen: kitchen.isSuccess, canManage: manager.isSuccess };
+  return { canUseKitchen: kitchen.isSuccess, canManage: manager.isSuccess, isChecking: !!user.data && !!id && (kitchen.isPending || manager.isPending) };
 }

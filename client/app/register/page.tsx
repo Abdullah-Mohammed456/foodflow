@@ -1,2 +1,2 @@
 import { AuthPage } from "@/components/commerce";
-export default function RegisterPage() { return <AuthPage mode="register" />; }
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) { const { next } = await searchParams; return <AuthPage mode="register" next={next} />; }

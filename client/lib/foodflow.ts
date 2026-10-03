@@ -51,6 +51,8 @@ export interface OrderItem {
   nameSnapshot: string;
   descriptionSnapshot: string | null;
   sizeSnapshot: Size;
+  isComboSnapshot: boolean;
+  prepTimeMinutesSnapshot: number;
   quantity: number;
   unitPrice: string;
   lineTotal: string;
@@ -82,6 +84,7 @@ export interface CartLine {
   size: Size;
   unitPrice: string;
   quantity: number;
+  variants?: { size: Size; price: string }[];
 }
 
 const photos: Record<string, string> = {
@@ -98,14 +101,16 @@ const photos: Record<string, string> = {
 export const CATEGORY_ORDER = ["pizza", "burgers", "sandwiches", "fries-sides", "chicken", "drinks", "desserts", "combos-deals"];
 export const photoFor = (slug: string): string => photos[slug] ?? "/food/cosmos_1718309446.webp";
 const itemPhotos: Record<string, string> = {
-  "margherita-pizza": "/food/pizza.jpg",
-  "pepperoni-pizza": "/food/pizza.jpg",
+  "margherita-pizza": "/food/margherita.jpg",
+  "pepperoni-pizza": "/food/pepperoni.jpg",
   "classic-cheeseburger": "/food/cosmos_1718309446.webp",
   "double-smash-burger": "/food/cosmos_1965868063.webp",
   "club-sandwich": "/food/sandwich.jpg",
   "french-fries": "/food/cosmos_1096855834.webp",
-  "loaded-fries": "/food/cosmos_1661902048.webp",
+  "loaded-fries": "/food/loaded-fries.jpg",
+  "chicken-nuggets": "/food/nuggets.jpg",
   "cola": "/food/drinks.jpg",
+  "milkshake": "/food/milkshake.jpg",
   "burger-fries-drink-combo": "/food/cosmos_339898762.webp",
 };
 export const itemPhoto = (item: MenuItem) => item.imageUrl ?? itemPhotos[item.slug] ?? photoFor(item.category.slug);

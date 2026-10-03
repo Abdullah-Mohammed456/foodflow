@@ -86,6 +86,11 @@ bind a local port.
 The landing's photography is composed of user-supplied images in
 `foodflow-mockups/` and real food photos from Pexels; local copies live in
 `client/public/food/`. The interface copy is in English.
+Additional menu photography: [Margherita pizza](https://www.pexels.com/photo/photo-of-margherita-pizza-14590497/),
+[pepperoni pizza](https://www.pexels.com/photo/close-up-of-a-pepperoni-pizza-7813574/),
+[loaded fries](https://www.pexels.com/photo/delicious-loaded-fries-with-cheese-and-sauces-29285460/),
+[chicken nuggets](https://www.pexels.com/photo/close-up-shot-of-a-fried-food-11710531/), and
+[milkshake](https://www.pexels.com/photo/refreshing-vanilla-milkshake-on-wooden-table-28525198/).
 
 ## Architecture (M1 proof)
 
