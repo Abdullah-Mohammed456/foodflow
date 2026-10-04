@@ -90,7 +90,7 @@ export interface CartLine {
 const photos: Record<string, string> = {
   pizza: "/food/pizza.jpg",
   burgers: "/food/cosmos_1718309446.webp",
-  sandwiches: "/food/sandwich.jpg",
+  sandwiches: "/food/club-sandwich.jpg",
   "fries-sides": "/food/cosmos_1096855834.webp",
   chicken: "/food/chicken.jpg",
   drinks: "/food/drinks.jpg",
@@ -105,12 +105,14 @@ const itemPhotos: Record<string, string> = {
   "pepperoni-pizza": "/food/pepperoni.jpg",
   "classic-cheeseburger": "/food/cosmos_1718309446.webp",
   "double-smash-burger": "/food/cosmos_1965868063.webp",
-  "club-sandwich": "/food/sandwich.jpg",
+  "crispy-chicken-sandwich": "/food/crispy-chicken-sandwich.jpg",
+  "club-sandwich": "/food/club-sandwich.jpg",
   "french-fries": "/food/cosmos_1096855834.webp",
   "loaded-fries": "/food/loaded-fries.jpg",
   "chicken-nuggets": "/food/nuggets.jpg",
-  "cola": "/food/drinks.jpg",
+  "cola": "/food/cola.jpg",
   "milkshake": "/food/milkshake.jpg",
+  "chocolate-cake": "/food/chocolate-cake.jpg",
   "burger-fries-drink-combo": "/food/cosmos_339898762.webp",
 };
 export const itemPhoto = (item: MenuItem) => item.imageUrl ?? itemPhotos[item.slug] ?? photoFor(item.category.slug);

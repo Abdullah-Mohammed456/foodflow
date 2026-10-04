@@ -31,8 +31,8 @@ const menu = [
     prepTimeMinutes: 12,
     isSpicy: false,
     variants: [
-      { size: MenuItemSize.MEDIUM, price: "145.00" },
-      { size: MenuItemSize.LARGE, price: "195.00" },
+      { size: MenuItemSize.MEDIUM, price: "175.00" },
+      { size: MenuItemSize.LARGE, price: "265.00" },
     ],
   },
   {
@@ -43,8 +43,8 @@ const menu = [
     prepTimeMinutes: 13,
     isSpicy: false,
     variants: [
-      { size: MenuItemSize.MEDIUM, price: "175.00" },
-      { size: MenuItemSize.LARGE, price: "230.00" },
+      { size: MenuItemSize.MEDIUM, price: "199.00" },
+      { size: MenuItemSize.LARGE, price: "299.00" },
     ],
   },
   {
@@ -55,8 +55,8 @@ const menu = [
     prepTimeMinutes: 8,
     isSpicy: false,
     variants: [
-      { size: MenuItemSize.SINGLE, price: "115.00" },
-      { size: MenuItemSize.DOUBLE, price: "155.00" },
+      { size: MenuItemSize.SINGLE, price: "160.00" },
+      { size: MenuItemSize.DOUBLE, price: "240.00" },
     ],
   },
   {
@@ -66,7 +66,7 @@ const menu = [
     description: "Two seared beef patties with pickles and cheese.",
     prepTimeMinutes: 9,
     isSpicy: false,
-    variants: [{ size: MenuItemSize.DOUBLE, price: "175.00" }],
+    variants: [{ size: MenuItemSize.DOUBLE, price: "250.00" }],
   },
   {
     name: "Crispy Chicken Sandwich",
@@ -75,7 +75,7 @@ const menu = [
     description: "Crispy chicken, slaw, and creamy sauce.",
     prepTimeMinutes: 9,
     isSpicy: false,
-    variants: [{ size: MenuItemSize.REGULAR, price: "135.00" }],
+    variants: [{ size: MenuItemSize.REGULAR, price: "190.00" }],
   },
   {
     name: "Club Sandwich",
@@ -84,7 +84,7 @@ const menu = [
     description: "Grilled chicken, cheese, lettuce, and tomato.",
     prepTimeMinutes: 10,
     isSpicy: false,
-    variants: [{ size: MenuItemSize.REGULAR, price: "125.00" }],
+    variants: [{ size: MenuItemSize.REGULAR, price: "170.00" }],
   },
   {
     name: "French Fries",
@@ -94,8 +94,8 @@ const menu = [
     prepTimeMinutes: 5,
     isSpicy: false,
     variants: [
-      { size: MenuItemSize.REGULAR, price: "45.00" },
-      { size: MenuItemSize.LARGE, price: "65.00" },
+      { size: MenuItemSize.REGULAR, price: "40.00" },
+      { size: MenuItemSize.LARGE, price: "60.00" },
     ],
   },
   {
@@ -105,7 +105,7 @@ const menu = [
     description: "Fries topped with cheese sauce and herbs.",
     prepTimeMinutes: 7,
     isSpicy: false,
-    variants: [{ size: MenuItemSize.REGULAR, price: "85.00" }],
+    variants: [{ size: MenuItemSize.REGULAR, price: "95.00" }],
   },
   {
     name: "Chicken Nuggets",
@@ -115,8 +115,8 @@ const menu = [
     prepTimeMinutes: 7,
     isSpicy: false,
     variants: [
-      { size: MenuItemSize.SINGLE, price: "90.00" },
-      { size: MenuItemSize.DOUBLE, price: "160.00" },
+      { size: MenuItemSize.SINGLE, price: "120.00" },
+      { size: MenuItemSize.DOUBLE, price: "200.00" },
     ],
   },
   {
@@ -127,8 +127,8 @@ const menu = [
     prepTimeMinutes: 1,
     isSpicy: false,
     variants: [
-      { size: MenuItemSize.REGULAR, price: "30.00" },
-      { size: MenuItemSize.LARGE, price: "40.00" },
+      { size: MenuItemSize.REGULAR, price: "40.00" },
+      { size: MenuItemSize.LARGE, price: "55.00" },
     ],
   },
   {
@@ -138,7 +138,7 @@ const menu = [
     description: "Vanilla milkshake blended to order.",
     prepTimeMinutes: 4,
     isSpicy: false,
-    variants: [{ size: MenuItemSize.REGULAR, price: "80.00" }],
+    variants: [{ size: MenuItemSize.REGULAR, price: "110.00" }],
   },
   {
     name: "Chocolate Cake",
@@ -147,7 +147,7 @@ const menu = [
     description: "Rich chocolate cake slice.",
     prepTimeMinutes: 2,
     isSpicy: false,
-    variants: [{ size: MenuItemSize.REGULAR, price: "75.00" }],
+    variants: [{ size: MenuItemSize.REGULAR, price: "100.00" }],
   },
   {
     name: "Burger + Fries + Drink Combo",

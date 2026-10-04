@@ -91,6 +91,20 @@ Additional menu photography: [Margherita pizza](https://www.pexels.com/photo/pho
 [loaded fries](https://www.pexels.com/photo/delicious-loaded-fries-with-cheese-and-sauces-29285460/),
 [chicken nuggets](https://www.pexels.com/photo/close-up-shot-of-a-fried-food-11710531/), and
 [milkshake](https://www.pexels.com/photo/refreshing-vanilla-milkshake-on-wooden-table-28525198/).
+Distinct photos added for [club sandwich](https://www.pexels.com/photo/club-sandwich-with-bowl-of-fries-12469931/),
+[crispy chicken sandwich](https://www.pexels.com/photo/close-up-of-a-chicken-sandwich-9211149/),
+[cola](https://www.pexels.com/photo/a-glass-of-iced-cola-8879617/), and
+[chocolate cake](https://www.pexels.com/photo/chocolate-cake-slice-1028711/).
+These are real stock photographs, not photographs of FoodFlow's actual dishes.
+Replace them with approved product photography before taking real orders.
+
+The seed prices are provisional Egyptian market benchmarks, not confirmed
+FoodFlow selling prices. They were checked against the published menus of
+[Buffalo Burger](https://buffaloburger.com/branches/all/menu?lang=en) and
+[Domino's Egypt](https://store.dominos.com.eg/en/giza/el-shikh-zaid/domnyoz-bytza-607)
+in October 2026. Confirm each size, bundle, tax, and delivery charge with the
+restaurant owner before production. The seed only creates missing items; it
+does not overwrite the prices of an existing catalog when run again.
 
 ## Architecture (M1 proof)
 
