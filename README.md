@@ -1,37 +1,45 @@
 # FoodFlow
 
-Single-brand fast-food restaurant ordering platform (pizza, burgers, sandwiches, fries & sides, chicken, drinks, desserts, combos & deals). Specs live in `markdown-files/`
-(`MASTER-PLAN.md`, `MILESTONES.md`, `IMPLEMENTATION-M*.md`). Any agent working in this repo must treat it as fast food — not generic restaurant food.
+Fast-food ordering platform for a single-brand restaurant in Egypt — pizza, burgers, sandwiches, fries & sides, chicken, drinks, desserts, and combo deals. Customers order dine-in, takeaway, or delivery with live status; kitchen runs a prep-urgency queue; managers run catalog, staff, and rush-hour analytics.
 
-## Current progress
+Live: https://foodflow-eg.vercel.app
 
-The MVP client now includes the photo-led FoodFlow landing page, public menu,
-account registration and profile, cart, checkout, order history and live status,
-kitchen queue, and manager analytics, catalog, staff, and settings. It uses the
-M1–M7 backend APIs; prices, permissions, totals, and order state remain server
-authoritative. Customer and kitchen screens refetch after Socket.IO events and
-poll when disconnected. The M1 connectivity probe remains in the landing
-page's “Connection status” disclosure. See `server/README.md` for API and
-migration details.
+## What is inside
 
-Production rollout to Vercel, an API host, and Neon is pending. The database is
-already on Neon; the repository owner will connect the real project URLs. For
-a no-credit-card staging backend, see [Back4app deployment](DEPLOY-BACK4APP.md).
-Set `NEXT_PUBLIC_API_URL` on Vercel to the API origin, and `FRONTEND_URL` on the
-API host to the Vercel origin. Keep Neon credentials and JWT secrets in the
-platforms' secret managers, run migrations and the catalog seed, then perform
-the production smoke test documented in `server/README.md`.
+Customer: landing page, public menu with 8 categories, search and size selection, cart, checkout with order-type selector, order confirmation, order history, live order tracking, account registration and profile.
 
-## Layout
+Kitchen: prep-deadline queue for active orders, status transitions PENDING to CONFIRMED to PREPARING to READY to COMPLETED, Socket.IO live updates with HTTP refetch fallback.
+
+Manager: revenue and order analytics, popular items, rush-hour breakdown, menu and category CRUD, availability toggles, staff list and role management, restaurant open and closed settings.
+
+Platform: Next.js App Router with TypeScript strict and Tailwind v4 on Vercel; Express with TypeScript, Prisma 7, Zod, and Socket.IO on the API host; PostgreSQL on Neon. Prices, permissions, totals, and order state are server authoritative. Auth uses HttpOnly cookies. Combo prices are server-defined bundles.
+
+## Repository layout
 
 ```text
 foodflow/
   client/                   # Next.js (App Router, TS strict, Tailwind v4, TanStack Query)
   server/                   # Express + TypeScript + Prisma 7 + Zod + PostgreSQL
-  markdown-files/           # product / architecture / milestone docs
+  markdown-files/           # product and milestone specs (M1-M7)
 ```
 
-(`client/` ↔ `server/` implement the M1 `frontend/` ↔ `backend/` split.)
+`client/` and `server/` implement the M1 `frontend/` and `backend/` split. Product specs live in `markdown-files/` (`MASTER-PLAN.md`, `MILESTONES.md`, `IMPLEMENTATION-M*.md`). Any agent working in this repo must treat it as fast food, not generic restaurant food.
+
+## Production deployment
+
+Frontend: `client/` on Vercel, project root `client/`. Set `NEXT_PUBLIC_API_URL` to the API origin (for example `https://YOUR-BACK4APP-APP-URL`). Browser traffic uses same-origin `/api/*` and `/health/*` rewrites, so auth cookies stay first-party.
+
+Backend: `server/` on Back4app Containers from the repo root `Dockerfile`, exposed port 4000. See [Back4app deployment](DEPLOY-BACK4APP.md). Set `DATABASE_URL` (Neon pooled), `DIRECT_URL` (Neon direct), `JWT_ACCESS_SECRET` (32+ random characters), `FRONTEND_URL` (exact Vercel origin, no trailing slash), `NODE_ENV=production`, `TRUST_PROXY=true`, `PORT=4000`.
+
+Database: Neon PostgreSQL. Run migrations on the API host at startup (`prisma migrate deploy`), then seed once:
+
+```sh
+npm run db:seed:prod
+```
+
+with `SEED_OWNER_EMAIL` set to the registered owner account. The seed creates the restaurant, the 8 canonical categories, the menu, and grants that account `OWNER`.
+
+Current status, October 2026: the Vercel frontend is live and the Neon database is reachable, but the Back4app container is returning 404 on `/health` and `/health/ready`. Until the container is restarted with the variables above, the production menu, checkout, kitchen, and admin screens cannot reach the API. After redeploying the commits in this branch, restart the Back4app app, open `https://YOUR-BACK4APP-APP-URL/health/ready`, and expect `{"success":true}`.
 
 ## Quickstart with Docker
 
@@ -60,13 +68,13 @@ Stop the services with `Ctrl+C`, or run `npm run dev:down` in another terminal.
 The PostgreSQL data remains in a Docker volume between runs.
 
 For standalone local development, copy `server/.env.example` to `server/.env`
-and `client/.env.example` to `client/.env.local`. Docker uses the local
-PostgreSQL service by default. To use Neon with Docker, edit `server/.env`:
-set `DATABASE_URL` to Neon's pooled URL and `DIRECT_URL` to its direct URL.
-The optional `server/.env` overrides the local defaults in the example file.
-For standalone local development, set both URLs to your database and use a
-generated secret for `JWT_ACCESS_SECRET`.
-```
+and `client/.env.example` to `client/.env.local`. Never put production Neon
+credentials or the production JWT secret into `server/.env`; those belong only
+in the hosting platforms' secret managers.
+
+## Admin account
+
+Register the owner account through the deployed frontend (`/register`), then set `SEED_OWNER_EMAIL` to that email and run `npm run db:seed:prod` once against the production database. Sign in again: `/admin` manages catalog, analytics, staff, and settings; `/kitchen` accepts and advances orders. The last `OWNER` cannot be demoted or removed. Rotate `JWT_ACCESS_SECRET` if it was ever copied outside the secret manager.
 
 ## Checks
 
@@ -84,39 +92,27 @@ must never point to a database containing valuable data. The client production
 build uses `npm run build` with webpack on hosts where Turbopack workers cannot
 bind a local port.
 
-The landing's photography is composed of user-supplied images in
-`foodflow-mockups/` and real food photos from Pexels; local copies live in
-`client/public/food/`. The interface copy is in English.
-The scroll-driven burger film uses 24 compressed frames extracted from the
-user-supplied Gemini video in `output/`. It is generated media with very subtle
-movement, so replace it with a real shoot of the restaurant's burger before
-using it as authentic product photography.
-Additional menu photography: [Margherita pizza](https://www.pexels.com/photo/photo-of-margherita-pizza-14590497/),
-[pepperoni pizza](https://www.pexels.com/photo/close-up-of-a-pepperoni-pizza-7813574/),
-[loaded fries](https://www.pexels.com/photo/delicious-loaded-fries-with-cheese-and-sauces-29285460/),
-[chicken nuggets](https://www.pexels.com/photo/close-up-shot-of-a-fried-food-11710531/), and
-[milkshake](https://www.pexels.com/photo/refreshing-vanilla-milkshake-on-wooden-table-28525198/).
-Distinct photos added for [club sandwich](https://www.pexels.com/photo/club-sandwich-with-bowl-of-fries-12469931/),
-[crispy chicken sandwich](https://www.pexels.com/photo/close-up-of-a-chicken-sandwich-9211149/),
-[cola](https://www.pexels.com/photo/a-glass-of-iced-cola-8879617/), and
-[chocolate cake](https://www.pexels.com/photo/chocolate-cake-slice-1028711/).
-These are real stock photographs, not photographs of FoodFlow's actual dishes.
-Replace them with approved product photography before taking real orders.
+```sh
+TEST_DATABASE_URL=postgresql://USER@127.0.0.1:PORT/foodflow_m4_test npm test
+```
 
-The seed prices are provisional Egyptian market benchmarks, not confirmed
-FoodFlow selling prices. They were checked against the published menus of
-[Buffalo Burger](https://buffaloburger.com/branches/all/menu?lang=en) and
-[Domino's Egypt](https://store.dominos.com.eg/en/giza/el-shikh-zaid/domnyoz-bytza-607)
-in October 2026. Confirm each size, bundle, tax, and delivery charge with the
-restaurant owner before production. The seed only creates missing items; it
-does not overwrite the prices of an existing catalog when run again.
+Production smoke test, after the API host is healthy: register, login, browse the fast-food menu, place a takeaway combo order, confirm the kitchen receives it, advance it to READY, confirm the customer sees the update, logout, and confirm unauthorized admin access is denied. The backend-only script covers health, register, login, public menu, admin denial, origin denial, and security headers:
 
-On the production API host, after migrations have succeeded, register the
-restaurant owner's account, set `SEED_OWNER_EMAIL` to that email, and run
-`npm run db:seed:prod` once from the built server directory. This creates the
-catalog on a fresh database and grants that registered account `OWNER` access.
-The production image includes `dist/seed.js` and does not need development
-dependencies for this step.
+```sh
+./server/scripts/smoke.sh https://YOUR-BACK4APP-APP-URL
+```
+
+## Images and photography
+
+The landing photography uses local copies in `client/public/food/`, including the category tiles, menu item photos, the combo banner, and the 120-frame scroll-driven burger film in `client/public/food/burger-sequence/`. The site icon is `client/app/icon.svg` and social sharing uses `/food/combo.jpg` through Open Graph and Twitter metadata.
+
+The menu photos are real stock photographs, not photographs of FoodFlow's actual dishes. Replace them with approved product photography before taking real orders. The burger film is generated media with subtle movement, so replace it with a real shoot of the restaurant's burger before using it as authentic product photography.
+
+The seed prices are provisional Egyptian market benchmarks, not confirmed FoodFlow selling prices. They were checked against published Egyptian menus in October 2026. Confirm each size, bundle, tax, and delivery charge with the restaurant owner before production. The seed only creates missing items; it does not overwrite the prices of an existing catalog when run again.
+
+## Search and social
+
+The app ships `sitemap.xml` and `robots.txt` from the App Router, canonical URLs, Open Graph and Twitter cards, a web manifest, and Restaurant JSON-LD pointing at `https://foodflow-eg.vercel.app`. New domains are not indexed automatically: verify the property in Google Search Console, submit `/sitemap.xml`, and wait for the first crawl. Ranking depends on real content, reviews, and links, not on metadata alone.
 
 ## Architecture (M1 proof)
 

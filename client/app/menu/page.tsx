@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { MenuExplorer } from "@/components/menu-explorer";
 import { CATEGORY_ORDER } from "@/lib/foodflow";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "Menu",
+  description:
+    "Browse the FoodFlow menu: pizza, burgers, sandwiches, fries & sides, chicken, drinks, desserts and combo deals. Order dine-in, takeaway or delivery.",
+  alternates: { canonical: "/menu" },
+};
 
 export default async function MenuPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category } = await searchParams;
