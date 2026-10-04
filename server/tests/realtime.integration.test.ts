@@ -46,8 +46,8 @@ test("M5 realtime kitchen and customer updates", { skip: !databaseUrl }, async (
   await new Promise<void>((resolve) => server.once("listening", resolve));
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   const cookie = (id: string) => `foodflow_access=${createAccessToken({ id, role: "CUSTOMER" })}`;
-  const openSocket = async (id?: string): Promise<Socket> => {
-    const socket = connect(base, { path: "/api/socket.io", transports: ["websocket"], reconnection: false, extraHeaders: { Origin: "http://localhost:3000", ...(id ? { Cookie: cookie(id) } : {}) } });
+  const openSocket = async (id?: string, sameOrigin = false, origin?: string): Promise<Socket> => {
+    const socket = connect(base, { path: "/api/socket.io", transports: [sameOrigin ? "polling" : "websocket"], reconnection: false, extraHeaders: { ...(sameOrigin ? { Referer: "http://localhost:3000/kitchen" } : { Origin: "http://localhost:3000" }), ...(origin ? { Origin: origin } : {}), ...(id ? { Cookie: cookie(id) } : {}) } });
     sockets.push(socket);
     await new Promise<void>((resolve, reject) => { socket.once("connect", resolve); socket.once("connect_error", reject); });
     return socket;
@@ -65,8 +65,11 @@ test("M5 realtime kitchen and customer updates", { skip: !databaseUrl }, async (
   await t.test("unauthenticated sockets are rejected", async () => {
     await assert.rejects(() => openSocket(), /Authentication required/);
   });
+  await t.test("an untrusted origin cannot bypass the gate with a trusted referer", async () => {
+    await assert.rejects(() => openSocket("owner", true, "https://evil.example"));
+  });
   const customer = await openSocket("customer");
-  const owner = await openSocket("owner");
+  const owner = await openSocket("owner", true);
   const outsider = await openSocket("outsider");
 
   await t.test("only branch staff can subscribe", async () => {

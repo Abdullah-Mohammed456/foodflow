@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { io } from "socket.io-client";
-import { apiFetch, API_BASE } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { human, money, type Order, type OrderType, type Page, type User } from "@/lib/foodflow";
 import { useCart } from "@/components/cart-provider";
 import { useRestaurant, useStaffAccess, useUser } from "@/lib/queries";
@@ -19,7 +19,7 @@ function useOrderUpdates(enabled: boolean) {
   const client = useQueryClient();
   useEffect(() => {
     if (!enabled) return;
-    const socket = io(API_BASE, { path: "/api/socket.io", withCredentials: true, reconnection: true });
+    const socket = io({ path: "/api/socket.io", transports: ["polling"], withCredentials: true, reconnection: true });
     const refresh = () => { client.invalidateQueries({ queryKey: ["orders"] }); client.invalidateQueries({ queryKey: ["order"] }); };
     socket.on("connect", refresh);
     for (const event of ["order.created", "order.confirmed", "order.preparing", "order.ready", "order.completed", "order.cancelled", "order.updated"]) socket.on(event, refresh);
@@ -44,7 +44,9 @@ export function AuthPage({ mode, next, registered = false }: { mode: "login" | "
         router.push(`/login?registered=1&next=${encodeURIComponent(destination)}`);
       } else {
         await apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
-        await client.invalidateQueries({ queryKey: ["me"] });
+        const session = await apiFetch<{ user: User }>("/api/auth/me");
+        client.clear();
+        client.setQueryData(["me"], session.user);
         router.push(destination);
         router.refresh();
       }
@@ -70,7 +72,7 @@ function AccountForm({ user, refetch }: { user: User; refetch: () => Promise<unk
   const [error, setError] = useState<unknown>(null);
   const [message, setMessage] = useState("");
   const save = async (event: FormEvent) => { event.preventDefault(); setError(null); setMessage(""); try { await apiFetch<{ user: User }>("/api/auth/me", { method: "PATCH", body: JSON.stringify({ name, email }) }); await refetch(); setMessage("Profile saved."); } catch (caught) { setError(caught); } };
-  const logout = async () => { try { await apiFetch("/api/auth/logout", { method: "POST", body: "{}" }); client.setQueryData(["me"], null); await client.invalidateQueries({ queryKey: ["me"] }); router.push("/"); router.refresh(); } catch (caught) { setError(caught); } };
+  const logout = async () => { try { await apiFetch("/api/auth/logout", { method: "POST", body: "{}" }); client.clear(); client.setQueryData(["me"], null); router.push("/"); router.refresh(); } catch (caught) { setError(caught); } };
   return <main className="interior wrap"><PageLead eyebrow={`GOOD TO SEE YOU, ${user.name.toUpperCase()}`} title="YOUR ACCOUNT." description="Your details, your orders, and all the good food ahead." image="/food/sandwich.jpg" imageAlt="Fresh sandwich" chapter="05"/><div className="interior-grid"><section className="panel"><h2>Your details</h2><form onSubmit={save}><label>Name<input required value={name} maxLength={100} onChange={(event) => setName(event.target.value)}/></label><label>Email<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)}/></label><ErrorText error={error}/>{message && <p role="status">{message}</p>}<button className="action" type="submit">SAVE CHANGES →</button></form></section><section className="panel account-links"><h2>Good things ahead.</h2><Link href="/orders">Track your orders →</Link><Link href="/menu">Explore the menu →</Link>{access.canUseKitchen && <Link href="/kitchen">Kitchen dashboard →</Link>}{access.canManage && <Link href="/admin">Manage restaurant →</Link>}<button type="button" onClick={logout}>Sign out →</button></section></div></main>;
 }
 

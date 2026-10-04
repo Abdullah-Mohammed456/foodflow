@@ -54,7 +54,11 @@ export function HorizontalCategories() {
     const ctx = gsap.context(() => {
       const track = root.current!.querySelector<HTMLElement>(".film-track");
       if (!track) return;
-      gsap.to(track, { x: () => -(track.scrollWidth - window.innerWidth), ease: "none", scrollTrigger: { trigger: root.current, start: "top top", end: () => `+=${track.scrollWidth - window.innerWidth}`, pin: true, scrub: .8, invalidateOnRefresh: true, snap: { snapTo: 1 / (CATEGORY_ORDER.length - 1), duration: .25 } } });
+      const travel = gsap.to(track, { x: () => -(track.scrollWidth - window.innerWidth), ease: "none", scrollTrigger: { trigger: root.current, start: "top top", end: () => `+=${track.scrollWidth - window.innerWidth}`, pin: true, scrub: .45, invalidateOnRefresh: true, snap: { snapTo: 1 / (CATEGORY_ORDER.length - 1), duration: .25 } } });
+      track.querySelectorAll<HTMLElement>(".film-panel").forEach((panel) => {
+        gsap.fromTo(panel.querySelector("img"), { xPercent: -5, scale: 1.16 }, { xPercent: 5, scale: 1.16, ease: "none", scrollTrigger: { trigger: panel, containerAnimation: travel, start: "left right", end: "right left", scrub: true } });
+        gsap.fromTo(panel.querySelector(".film-title"), { x: 70, opacity: .35 }, { x: -30, opacity: 1, ease: "none", scrollTrigger: { trigger: panel, containerAnimation: travel, start: "left right", end: "center center", scrub: true } });
+      });
     }, root);
     return () => ctx.revert();
   }, []);
@@ -68,8 +72,11 @@ export function ParallaxMotion() {
       const deal = document.querySelector<HTMLElement>(".deal-image img");
       if (deal) gsap.fromTo(deal, { yPercent: -8, scale: 1.2 }, { yPercent: 8, scale: 1.2, ease: "none", scrollTrigger: { trigger: ".deal-section", start: "top bottom", end: "bottom top", scrub: .8 } });
       document.querySelectorAll<HTMLElement>(".showcase-card img").forEach((image) => {
-        gsap.fromTo(image, { yPercent: -7, scale: 1.16 }, { yPercent: 7, scale: 1.16, ease: "none", scrollTrigger: { trigger: image.parentElement ?? image, start: "top bottom", end: "bottom top", scrub: .8 } });
+        gsap.fromTo(image, { yPercent: -12, scale: 1.3, rotate: -2 }, { yPercent: 12, scale: 1.3, rotate: 2, ease: "none", scrollTrigger: { trigger: image.parentElement ?? image, start: "top bottom", end: "bottom top", scrub: .45 } });
       });
+      gsap.fromTo(".showcase-card", { y: 65, opacity: .25 }, { y: 0, opacity: 1, stagger: .08, duration: .8, ease: "power3.out", scrollTrigger: { trigger: ".showcase-grid", start: "top 85%", once: true } });
+      gsap.fromTo(".deal-copy", { y: 60 }, { y: -30, ease: "none", scrollTrigger: { trigger: ".deal-section", start: "top bottom", end: "bottom top", scrub: .4 } });
+      gsap.fromTo(".ways>div", { y: 45, opacity: .3 }, { y: 0, opacity: 1, duration: .7, stagger: .1, ease: "power3.out", scrollTrigger: { trigger: ".ways", start: "top 85%", once: true } });
     });
     return () => ctx.revert();
   }, []);

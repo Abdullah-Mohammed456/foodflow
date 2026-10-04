@@ -14,8 +14,10 @@ gsap.registerPlugin(SplitText);
 function applyInfluence(el: HTMLElement, k: number, movement = 0, index = 0) {
   const glitch = k * movement;
   const direction = index % 2 === 0 ? 1 : -1;
-  el.style.transform = `translate3d(${(direction * 11 * glitch).toFixed(1)}px, ${(-26 * k + (index % 3 - 1) * 8 * glitch).toFixed(1)}px, 0) scale(${(1 + .38 * k).toFixed(3)}) skewX(${(direction * 5 * glitch).toFixed(2)}deg)`;
-  el.style.filter = `blur(${(1.5 * (1 - k) + 1.2 * glitch).toFixed(2)}px) drop-shadow(${(direction * 7 * glitch).toFixed(1)}px 0 0 rgba(238,77,54,${(.65 * glitch).toFixed(2)})) drop-shadow(${(-direction * 7 * glitch).toFixed(1)}px 0 0 rgba(87,190,205,${(.65 * glitch).toFixed(2)}))`;
+  const slice = Math.sin(performance.now() * .045 + index * 2.4);
+  el.style.transform = `translate3d(${(direction * 20 * glitch * slice).toFixed(1)}px, ${(-26 * k + (index % 3 - 1) * 12 * glitch).toFixed(1)}px, 0) scale(${(1 + .24 * k).toFixed(3)}) skewX(${(direction * 9 * glitch * slice).toFixed(2)}deg)`;
+  el.style.filter = `blur(${(.7 * (1 - k) + .6 * glitch).toFixed(2)}px) drop-shadow(${(direction * 12 * glitch).toFixed(1)}px 0 0 rgba(238,77,54,${(.85 * glitch).toFixed(2)})) drop-shadow(${(-direction * 12 * glitch).toFixed(1)}px 0 0 rgba(87,190,205,${(.85 * glitch).toFixed(2)}))`;
+  el.style.backgroundPosition = `${(50 + direction * 12 * glitch * slice).toFixed(1)}% ${51 + glitch * 8}%`;
   el.style.opacity = String(.78 + .22 * k);
   el.style.webkitTextStrokeColor = `rgba(255,255,255,${(.14 + .45 * k + .32 * glitch).toFixed(2)})`;
 }
@@ -71,8 +73,8 @@ export function FastFoodHero() {
       const previous = lastPointer.current;
       const speed = previous ? Math.hypot(point.x - previous.x, point.y - previous.y) / Math.max(16, now - previous.at) : 0;
       lastPointer.current = { ...point, at: now };
-      updateLetters(Math.min(1, speed / 1.1));
-      settle.current = window.setTimeout(() => updateLetters(0), 100);
+      updateLetters(Math.min(1, .22 + speed / .8));
+      settle.current = window.setTimeout(() => updateLetters(0), 90);
     });
   };
   const onLeave = () => {

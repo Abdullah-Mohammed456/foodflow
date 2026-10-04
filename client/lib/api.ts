@@ -12,7 +12,7 @@ if (!parsedEnv.success) {
   throw new Error("Invalid NEXT_PUBLIC_API_URL configuration");
 }
 
-export const API_BASE = parsedEnv.data.NEXT_PUBLIC_API_URL;
+export const API_BASE = new URL(parsedEnv.data.NEXT_PUBLIC_API_URL).origin;
 
 export interface ApiSuccess<T> {
   success: true;
@@ -42,7 +42,7 @@ export async function apiFetch<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${typeof window === "undefined" ? API_BASE : ""}${path}`, {
     ...init,
     credentials: "include",
     headers: { "content-type": "application/json", ...init?.headers },

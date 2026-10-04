@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { PageMotion } from "@/components/page-motion";
 
 export const metadata: Metadata = {
   title: "FoodFlow",
@@ -14,7 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <Providers><SiteHeader />{children}<SiteFooter /></Providers>
+        <Providers><SiteHeader />{children}<SiteFooter /><PageMotion /></Providers>
       </body>
     </html>
   );

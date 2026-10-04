@@ -9,7 +9,7 @@ function cookieAttributes(): string[] {
   return [
     "Path=/api",
     "HttpOnly",
-    production ? "SameSite=None" : "SameSite=Lax",
+    "SameSite=Lax",
     ...(production ? ["Secure"] : []),
   ];
 }

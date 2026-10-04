@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { io } from "socket.io-client";
-import { apiFetch, API_BASE } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 import { human, money, type Category, type MenuItem, type Order, type OrderStatus, type Page, type Size } from "@/lib/foodflow";
 import { useRestaurant, useStaffAccess, useUser } from "@/lib/queries";
 import { PageLead } from "@/components/page-lead";
@@ -26,7 +26,7 @@ export function KitchenPage() {
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 30000); const initial = window.setTimeout(() => setNow(Date.now()), 0); return () => { window.clearInterval(timer); window.clearTimeout(initial); }; }, []);
   useEffect(() => {
     if (!id || !user.data || !access.canUseKitchen) return;
-    const socket = io(API_BASE, { path: "/api/socket.io", withCredentials: true });
+    const socket = io({ path: "/api/socket.io", transports: ["polling"], withCredentials: true });
     const refresh = () => { client.invalidateQueries({ queryKey: ["kitchen", id] }); };
     socket.on("connect", () => { socket.emit("kitchen.subscribe", { restaurantId: id }, refresh); refresh(); });
     for (const event of ["order.created", "order.confirmed", "order.preparing", "order.ready", "order.completed", "order.cancelled"]) socket.on(event, refresh);

@@ -23,7 +23,16 @@ export function attachRealtime(server: HttpServer, service: RealtimeService) {
   const io = new Server<ClientEvents, ServerEvents, Record<string, never>, SocketData>(server, {
     path: "/api/socket.io",
     cors: { origin: env.FRONTEND_URL, credentials: true },
-    allowRequest: (request, done) => done(null, request.headers.origin === env.FRONTEND_URL),
+    allowRequest: (request, done) => {
+      const origin = request.headers.origin;
+      let referringOrigin: string | undefined;
+      try {
+        if (request.headers.referer) referringOrigin = new URL(request.headers.referer).origin;
+      } catch {
+        referringOrigin = undefined;
+      }
+      done(null, origin ? origin === env.FRONTEND_URL : referringOrigin === env.FRONTEND_URL);
+    },
     maxHttpBufferSize: 10_000,
   });
 
