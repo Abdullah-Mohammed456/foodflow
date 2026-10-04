@@ -106,6 +106,13 @@ in October 2026. Confirm each size, bundle, tax, and delivery charge with the
 restaurant owner before production. The seed only creates missing items; it
 does not overwrite the prices of an existing catalog when run again.
 
+On the production API host, after migrations have succeeded, register the
+restaurant owner's account, set `SEED_OWNER_EMAIL` to that email, and run
+`npm run db:seed:prod` once from the built server directory. This creates the
+catalog on a fresh database and grants that registered account `OWNER` access.
+The production image includes `dist/seed.js` and does not need development
+dependencies for this step.
+
 ## Architecture (M1 proof)
 
 `Route → Controller (thin) → Service → Repository → Prisma → PostgreSQL`,

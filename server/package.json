@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:seed": "tsx src/seed.ts",
+    "db:seed:prod": "node dist/seed.js",
     "prisma:studio": "prisma studio",
     "test": "tsx --test --test-concurrency=1 tests/*.test.ts"
   },
