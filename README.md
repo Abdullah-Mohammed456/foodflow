@@ -14,12 +14,13 @@ poll when disconnected. The M1 connectivity probe remains in the landing
 page's “Connection status” disclosure. See `server/README.md` for API and
 migration details.
 
-Production rollout to Vercel, Render, and Neon is intentionally pending. The
-repository owner chose to review and connect the real project URLs after this
-GitHub push. Set `NEXT_PUBLIC_API_URL` on Vercel to the Render API URL, and
-`FRONTEND_URL` on Render to the Vercel origin. Keep Neon credentials and JWT
-secrets in the platforms' secret managers, run migrations and the catalog seed,
-then perform the production smoke test documented in `server/README.md`.
+Production rollout to Vercel, an API host, and Neon is pending. The database is
+already on Neon; the repository owner will connect the real project URLs. For
+a no-credit-card staging backend, see [Railway deployment](DEPLOY-RAILWAY.md).
+Set `NEXT_PUBLIC_API_URL` on Vercel to the API origin, and `FRONTEND_URL` on the
+API host to the Vercel origin. Keep Neon credentials and JWT secrets in the
+platforms' secret managers, run migrations and the catalog seed, then perform
+the production smoke test documented in `server/README.md`.
 
 ## Layout
 

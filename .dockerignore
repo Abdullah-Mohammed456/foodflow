@@ -1,0 +1,11 @@
+.git
+.gitignore
+**/node_modules
+**/.env
+**/.env.*
+**/.next
+client
+foodflow-mockups
+markdown-files
+output
+README.md
