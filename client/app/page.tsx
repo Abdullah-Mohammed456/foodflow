@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { photoFor } from "@/lib/foodflow";
 import { HorizontalCategories, LandingIntro, ParallaxMotion } from "@/components/landing-motion";
+import { FeatureReveal } from "@/components/feature-reveal";
 
 async function getServerHealth(): Promise<HealthData | null> {
   try {
@@ -29,6 +30,7 @@ export default async function HomePage() {
       <FastFoodHero />
       <CategoryRibbon />
       <CategoryShowcase />
+      <FeatureReveal />
       <HorizontalCategories />
       <MenuExplorer compact />
       <section className="deal-section"><div className="deal-image"><Image src={photoFor("combos-deals")} alt="Burger, fries and a drink" fill sizes="(max-width: 650px) 100vw, 50vw" draggable={false}/><span>BETTER<br />TOGETHER</span></div><div className="deal-copy"><span className="eyebrow">THE COMBO CLUB</span><h2>Why stop<br />at <em>one?</em></h2><p>Make a meal of it. Your favourite main, golden fries, and an ice-cold drink. All the good stuff, one order.</p><Link className="action light" href="/menu?category=combos-deals">MEET THE COMBOS <span>→</span></Link></div></section>

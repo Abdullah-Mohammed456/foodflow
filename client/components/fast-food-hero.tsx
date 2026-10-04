@@ -2,12 +2,14 @@
 
 import { useLayoutEffect, useRef, type PointerEvent } from "react";
 import gsap from "gsap";
+import { SplitText } from "gsap/SplitText";
 import Link from "next/link";
 import Image from "next/image";
 import { photoFor } from "@/lib/foodflow";
 
 const LETTERS = ["FAST", "FOOD"].map((word) => [...word]);
 const RADIUS = 240;
+gsap.registerPlugin(SplitText);
 
 function applyInfluence(el: HTMLElement, k: number) {
   el.style.transform = `translate3d(0, ${(-26 * k).toFixed(1)}px, 0) scale(${(1 + .38 * k).toFixed(3)})`;
@@ -27,7 +29,11 @@ export function FastFoodHero() {
     if (!root.current || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const ctx = gsap.context(() => {
       gsap.fromTo(".poster-type", { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, ease: "power3.out", delay: .25 });
-      gsap.fromTo(".poster-headline", { y: 55, opacity: 0 }, { y: 0, opacity: 1, duration: .8, ease: "power3.out", delay: .55 });
+      const headline = root.current?.querySelector<HTMLElement>(".poster-headline h2");
+      if (headline) {
+        const split = SplitText.create(headline, { type: "words", mask: "words" });
+        gsap.fromTo(split.words, { yPercent: 105, opacity: 0 }, { yPercent: 0, opacity: 1, duration: .75, ease: "power3.out", stagger: .075, delay: .55, onComplete: () => split.revert() });
+      }
       gsap.fromTo(".poster-side figure", { y: 70, opacity: 0, rotate: 0 }, { y: 0, opacity: 1, rotate: (i: number) => i ? -5 : 5, duration: .85, ease: "power3.out", stagger: .15, delay: .75 });
     }, root);
     return () => { ctx.revert(); if (frame.current !== null) cancelAnimationFrame(frame.current); };
