@@ -183,7 +183,7 @@ zones and fee configuration are still future work.
   `429` envelope. General limiters are skipped when `NODE_ENV=test`.
   Configure windows and limits through the `API_*` variables in
   `.env.example`; horizontal scaling still needs a shared store.
-- `server/Dockerfile` builds a production image (`prisma migrate deploy`
+- `Dockerfile` builds a production image (`prisma migrate deploy`
   then `node dist/server.js`). Local compose targets the `build` stage
   for `npm run dev`. `render.yaml` deploys the API with `/health/ready`
   checks and `TRUST_PROXY=true` behind Render.

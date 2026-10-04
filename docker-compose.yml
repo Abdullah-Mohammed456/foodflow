@@ -16,7 +16,7 @@ services:
   server:
     build:
       context: .
-      dockerfile: ./server/Dockerfile
+      dockerfile: ./Dockerfile
       network: host
       target: build
     env_file:
