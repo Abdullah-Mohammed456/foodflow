@@ -1,0 +1,310 @@
+{
+  "width": 1920,
+  "height": 1080,
+  "video_fps": 24,
+  "video_duration_seconds": 4,
+  "sequence_count": 60,
+  "sampling": "nearest source frame to 60 uniform targets spanning first and last frames",
+  "frames": [
+    {
+      "file": "burger-000.png",
+      "source_frame": 0,
+      "timestamp_seconds": 0.0
+    },
+    {
+      "file": "burger-001.png",
+      "source_frame": 2,
+      "timestamp_seconds": 0.08333333333333333
+    },
+    {
+      "file": "burger-002.png",
+      "source_frame": 3,
+      "timestamp_seconds": 0.125
+    },
+    {
+      "file": "burger-003.png",
+      "source_frame": 5,
+      "timestamp_seconds": 0.20833333333333334
+    },
+    {
+      "file": "burger-004.png",
+      "source_frame": 6,
+      "timestamp_seconds": 0.25
+    },
+    {
+      "file": "burger-005.png",
+      "source_frame": 8,
+      "timestamp_seconds": 0.3333333333333333
+    },
+    {
+      "file": "burger-006.png",
+      "source_frame": 10,
+      "timestamp_seconds": 0.4166666666666667
+    },
+    {
+      "file": "burger-007.png",
+      "source_frame": 11,
+      "timestamp_seconds": 0.4583333333333333
+    },
+    {
+      "file": "burger-008.png",
+      "source_frame": 13,
+      "timestamp_seconds": 0.5416666666666666
+    },
+    {
+      "file": "burger-009.png",
+      "source_frame": 14,
+      "timestamp_seconds": 0.5833333333333334
+    },
+    {
+      "file": "burger-010.png",
+      "source_frame": 16,
+      "timestamp_seconds": 0.6666666666666666
+    },
+    {
+      "file": "burger-011.png",
+      "source_frame": 18,
+      "timestamp_seconds": 0.75
+    },
+    {
+      "file": "burger-012.png",
+      "source_frame": 19,
+      "timestamp_seconds": 0.7916666666666666
+    },
+    {
+      "file": "burger-013.png",
+      "source_frame": 21,
+      "timestamp_seconds": 0.875
+    },
+    {
+      "file": "burger-014.png",
+      "source_frame": 23,
+      "timestamp_seconds": 0.9583333333333334
+    },
+    {
+      "file": "burger-015.png",
+      "source_frame": 24,
+      "timestamp_seconds": 1.0
+    },
+    {
+      "file": "burger-016.png",
+      "source_frame": 26,
+      "timestamp_seconds": 1.0833333333333333
+    },
+    {
+      "file": "burger-017.png",
+      "source_frame": 27,
+      "timestamp_seconds": 1.125
+    },
+    {
+      "file": "burger-018.png",
+      "source_frame": 29,
+      "timestamp_seconds": 1.2083333333333333
+    },
+    {
+      "file": "burger-019.png",
+      "source_frame": 31,
+      "timestamp_seconds": 1.2916666666666667
+    },
+    {
+      "file": "burger-020.png",
+      "source_frame": 32,
+      "timestamp_seconds": 1.3333333333333333
+    },
+    {
+      "file": "burger-021.png",
+      "source_frame": 34,
+      "timestamp_seconds": 1.4166666666666667
+    },
+    {
+      "file": "burger-022.png",
+      "source_frame": 35,
+      "timestamp_seconds": 1.4583333333333333
+    },
+    {
+      "file": "burger-023.png",
+      "source_frame": 37,
+      "timestamp_seconds": 1.5416666666666667
+    },
+    {
+      "file": "burger-024.png",
+      "source_frame": 39,
+      "timestamp_seconds": 1.625
+    },
+    {
+      "file": "burger-025.png",
+      "source_frame": 40,
+      "timestamp_seconds": 1.6666666666666667
+    },
+    {
+      "file": "burger-026.png",
+      "source_frame": 42,
+      "timestamp_seconds": 1.75
+    },
+    {
+      "file": "burger-027.png",
+      "source_frame": 43,
+      "timestamp_seconds": 1.7916666666666667
+    },
+    {
+      "file": "burger-028.png",
+      "source_frame": 45,
+      "timestamp_seconds": 1.875
+    },
+    {
+      "file": "burger-029.png",
+      "source_frame": 47,
+      "timestamp_seconds": 1.9583333333333333
+    },
+    {
+      "file": "burger-030.png",
+      "source_frame": 48,
+      "timestamp_seconds": 2.0
+    },
+    {
+      "file": "burger-031.png",
+      "source_frame": 50,
+      "timestamp_seconds": 2.0833333333333335
+    },
+    {
+      "file": "burger-032.png",
+      "source_frame": 52,
+      "timestamp_seconds": 2.1666666666666665
+    },
+    {
+      "file": "burger-033.png",
+      "source_frame": 53,
+      "timestamp_seconds": 2.2083333333333335
+    },
+    {
+      "file": "burger-034.png",
+      "source_frame": 55,
+      "timestamp_seconds": 2.2916666666666665
+    },
+    {
+      "file": "burger-035.png",
+      "source_frame": 56,
+      "timestamp_seconds": 2.3333333333333335
+    },
+    {
+      "file": "burger-036.png",
+      "source_frame": 58,
+      "timestamp_seconds": 2.4166666666666665
+    },
+    {
+      "file": "burger-037.png",
+      "source_frame": 60,
+      "timestamp_seconds": 2.5
+    },
+    {
+      "file": "burger-038.png",
+      "source_frame": 61,
+      "timestamp_seconds": 2.5416666666666665
+    },
+    {
+      "file": "burger-039.png",
+      "source_frame": 63,
+      "timestamp_seconds": 2.625
+    },
+    {
+      "file": "burger-040.png",
+      "source_frame": 64,
+      "timestamp_seconds": 2.6666666666666665
+    },
+    {
+      "file": "burger-041.png",
+      "source_frame": 66,
+      "timestamp_seconds": 2.75
+    },
+    {
+      "file": "burger-042.png",
+      "source_frame": 68,
+      "timestamp_seconds": 2.8333333333333335
+    },
+    {
+      "file": "burger-043.png",
+      "source_frame": 69,
+      "timestamp_seconds": 2.875
+    },
+    {
+      "file": "burger-044.png",
+      "source_frame": 71,
+      "timestamp_seconds": 2.9583333333333335
+    },
+    {
+      "file": "burger-045.png",
+      "source_frame": 72,
+      "timestamp_seconds": 3.0
+    },
+    {
+      "file": "burger-046.png",
+      "source_frame": 74,
+      "timestamp_seconds": 3.0833333333333335
+    },
+    {
+      "file": "burger-047.png",
+      "source_frame": 76,
+      "timestamp_seconds": 3.1666666666666665
+    },
+    {
+      "file": "burger-048.png",
+      "source_frame": 77,
+      "timestamp_seconds": 3.2083333333333335
+    },
+    {
+      "file": "burger-049.png",
+      "source_frame": 79,
+      "timestamp_seconds": 3.2916666666666665
+    },
+    {
+      "file": "burger-050.png",
+      "source_frame": 81,
+      "timestamp_seconds": 3.375
+    },
+    {
+      "file": "burger-051.png",
+      "source_frame": 82,
+      "timestamp_seconds": 3.4166666666666665
+    },
+    {
+      "file": "burger-052.png",
+      "source_frame": 84,
+      "timestamp_seconds": 3.5
+    },
+    {
+      "file": "burger-053.png",
+      "source_frame": 85,
+      "timestamp_seconds": 3.5416666666666665
+    },
+    {
+      "file": "burger-054.png",
+      "source_frame": 87,
+      "timestamp_seconds": 3.625
+    },
+    {
+      "file": "burger-055.png",
+      "source_frame": 89,
+      "timestamp_seconds": 3.7083333333333335
+    },
+    {
+      "file": "burger-056.png",
+      "source_frame": 90,
+      "timestamp_seconds": 3.75
+    },
+    {
+      "file": "burger-057.png",
+      "source_frame": 92,
+      "timestamp_seconds": 3.8333333333333335
+    },
+    {
+      "file": "burger-058.png",
+      "source_frame": 93,
+      "timestamp_seconds": 3.875
+    },
+    {
+      "file": "burger-059.png",
+      "source_frame": 95,
+      "timestamp_seconds": 3.9583333333333335
+    }
+  ]
+}
