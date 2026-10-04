@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#26332e"/>
-  <path d="M14 22h36v5H24v6h20v5H24v9h-5V22h-5z" fill="#f7f4ec"/>
-  <path d="M14 47h36" stroke="#b94f36" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="47" cy="22" r="6" fill="#e2bf7a"/>
+  <title>Food Flow</title>
+  <rect width="64" height="64" rx="16" fill="#173c32"/>
+  <path d="M12 16h20v8H20v7h10v8H20v13h-8z" fill="#f4eee3"/>
+  <path d="M34 16h20v8H42v7h10v8H42v13h-8z" fill="#f97316"/>
 </svg>

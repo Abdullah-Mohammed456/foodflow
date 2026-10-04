@@ -4,6 +4,9 @@ Fast-food ordering platform for a single-brand restaurant in Egypt — pizza, bu
 
 Live: https://foodflow-eg.vercel.app
 
+See [Production checklist](PRODUCTION-CHECKLIST.md) for deployment after edits,
+the exact photography list, owner setup, completed checks and remaining release tests.
+
 ## What is inside
 
 Customer: landing page, public menu with 8 categories, search and size selection, cart, checkout with order-type selector, order confirmation, order history, live order tracking, account registration and profile.
@@ -29,7 +32,7 @@ foodflow/
 
 Frontend: `client/` on Vercel, project root `client/`. Set `NEXT_PUBLIC_API_URL` to the API origin (for example `https://YOUR-BACK4APP-APP-URL`). Browser traffic uses same-origin `/api/*` and `/health/*` rewrites, so auth cookies stay first-party.
 
-Backend: `server/` on Back4app Containers from the repo root `Dockerfile`, exposed port 4000. See [Back4app deployment](DEPLOY-BACK4APP.md). Set `DATABASE_URL` (Neon pooled), `DIRECT_URL` (Neon direct), `JWT_ACCESS_SECRET` (32+ random characters), `FRONTEND_URL` (exact Vercel origin, no trailing slash), `NODE_ENV=production`, `TRUST_PROXY=true`, `PORT=4000`.
+Backend: `server/` on a persistent container host. Back4app's free URL expires after 60 minutes; use a paid permanent container or another persistent host. On Back4app Containers from the repo root `Dockerfile`, exposed port 4000. See [Back4app deployment](DEPLOY-BACK4APP.md). Set `DATABASE_URL` (Neon pooled), `DIRECT_URL` (Neon direct), `JWT_ACCESS_SECRET` (32+ random characters), `FRONTEND_URL` (exact Vercel origin, no trailing slash), `NODE_ENV=production`, `TRUST_PROXY=true`, `PORT=4000`.
 
 Database: Neon PostgreSQL. Run migrations on the API host at startup (`prisma migrate deploy`), then seed once:
 
@@ -39,7 +42,7 @@ npm run db:seed:prod
 
 with `SEED_OWNER_EMAIL` set to the registered owner account. The seed creates the restaurant, the 8 canonical categories, the menu, and grants that account `OWNER`.
 
-Current status, October 2026: the Vercel frontend is live and the Neon database is reachable, but the Back4app container is returning 404 on `/health` and `/health/ready`. Until the container is restarted with the variables above, the production menu, checkout, kitchen, and admin screens cannot reach the API. After redeploying the commits in this branch, restart the Back4app app, open `https://YOUR-BACK4APP-APP-URL/health/ready`, and expect `{"success":true}`.
+Current status, October 2026: the frontend is hosted on Vercel, but the Back4app container is returning 404 on `/health` and `/health/ready`. Until the container is restarted with the variables above, the production menu, checkout, kitchen, and admin screens cannot reach the API. After redeploying the commits in this branch, restart the Back4app app, open `https://YOUR-BACK4APP-APP-URL/health/ready`, and expect `{"success":true}`.
 
 ## Quickstart with Docker
 
@@ -73,6 +76,23 @@ credentials or the production JWT secret into `server/.env`; those belong only
 in the hosting platforms' secret managers.
 
 ## Admin account
+
+A public signup intentionally creates a customer, never an administrator.
+For a new owner, run the one-time bootstrap from `server/` with privileged
+production database access after seeding the restaurant:
+
+```sh
+BOOTSTRAP_OWNER_EMAIL=your-owner@example.com npm run owner:bootstrap:prod
+```
+
+The command creates a missing account and grants its FoodFlow membership `OWNER`.
+A random password is saved only in `.owner-credentials.json`, with private file
+permissions; the file is ignored by Git. Read it privately and store it in your
+password manager. An existing account keeps its existing password. An existing
+credentials file is never overwritten. `BOOTSTRAP_CREDENTIALS_FILE` can select a
+private output path on a host with a persistent filesystem. No password is
+printed in hosting logs. This command does not run automatically on startup.
+
 
 Register the owner account through the deployed frontend (`/register`), then set `SEED_OWNER_EMAIL` to that email and run `npm run db:seed:prod` once against the production database. Sign in again: `/admin` manages catalog, analytics, staff, and settings; `/kitchen` accepts and advances orders. The last `OWNER` cannot be demoted or removed. Rotate `JWT_ACCESS_SECRET` if it was ever copied outside the secret manager.
 
@@ -127,3 +147,45 @@ Prisma is configured with the Prisma 7 config file and PostgreSQL driver
 adapter. Keep `DATABASE_URL` for application queries and `DIRECT_URL` for
 migrations. `server/.env` overrides the local Docker defaults, so verify which
 database those URLs target before applying migrations.
+
+## Updating the live app
+
+Push reviewed changes to the Git branch connected to the hosts. Vercel normally
+builds a new frontend deployment automatically. Check the deployment's commit
+and build result. Back4app must also rebuild when backend or Docker files change;
+if automatic Git deployment is disabled, redeploy it from its dashboard.
+Database changes require `prisma migrate deploy`; adding photos or changing
+frontend animation does not require migrations. Changing frontend build-time
+variables requires a new Vercel build. Changing backend variables requires
+restarting/redeploying the container.
+
+## Before accepting real orders
+
+- Confirm `/health/ready`, all eight menu categories, and final restaurant prices.
+- Verify signup, login, refresh, logout, and an expired-session recovery in a real browser.
+- Submit dine-in, takeaway and delivery orders; test required delivery address,
+  unavailable products, a closed restaurant, and repeated checkout submission.
+- With a separate owner session, accept the order in `/kitchen`, advance each
+  permitted status, and verify the customer receives updates without a reload.
+- Test `/admin` with owner and customer sessions, catalog edits, availability,
+  staff roles, analytics, and retention of the last owner.
+- Check mobile cart/checkout, keyboard focus, reduced motion, image loading,
+  horizontal section entry/exit, and browser console/network failures.
+- Configure real operating hours, delivery coverage, contact details, privacy and
+  cancellation policies, database backups and restore drills, error monitoring,
+  and uptime alerts. Cash ordering is implemented; online payment is not.
+- Replace provisional prices and stock product imagery with approved restaurant
+  information before presenting it as the restaurant's actual menu.
+
+Use Playwright for repeatable browser journeys and an AI browser agent to explore
+unexpected navigation, mobile behavior and error states. AI testing supplements
+these checks; it cannot certify that a site has no bugs. Run tests on a staging
+branch and a separate database, then perform a controlled production smoke test.
+
+## Photo sources
+
+New landing-page photographs and their source pages are recorded in
+[PHOTO-CREDITS.md](PHOTO-CREDITS.md). They are downloaded locally so the page does
+not depend on an external image host at runtime. The new icon is a two-colour FF
+monogram in `client/app/icon.svg`. Existing user-supplied assets retain their
+original provenance; confirm their usage rights before launch.

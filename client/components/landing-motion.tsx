@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-import { CATEGORY_ORDER, photoFor } from "@/lib/foodflow";
+import { CATEGORY_ORDER, editorialPhotoFor } from "@/lib/foodflow";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,7 +16,7 @@ export function LandingIntro() {
   useLayoutEffect(() => {
     const element = root.current;
     if (!element) return;
-    if (sessionStorage.getItem("foodflow-intro-seen") || matchMedia("(prefers-reduced-motion: reduce)").matches) { element.style.visibility = "hidden"; requestAnimationFrame(() => setVisible(false)); return; }
+    if (sessionStorage.getItem("foodflow-intro-seen") || matchMedia("(prefers-reduced-motion: reduce)").matches) { element.style.visibility = "hidden"; const frame = requestAnimationFrame(() => { setVisible(false); window.dispatchEvent(new Event("foodflow:intro-complete")); }); return () => cancelAnimationFrame(frame); }
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const ctx = gsap.context(() => {
@@ -26,20 +26,22 @@ export function LandingIntro() {
       const images = ["/food/cosmos_1965868063.webp", "/food/pizza.jpg", "/food/cosmos_1096855834.webp", "/food/combo.jpg"];
       const preloads = images.map((src) => new Promise<void>((resolve) => { const img = new window.Image(); img.onload = () => resolve(); img.onerror = () => resolve(); img.src = src; if (img.complete) resolve(); }));
       let ended = false;
+      let disposed = false;
+      let loadedTimer: number | undefined;
       const finish = () => {
-        if (ended) return;
+        if (ended || disposed) return;
         ended = true;
         loop.kill();
         sessionStorage.setItem("foodflow-intro-seen", "1");
-        gsap.timeline({ onComplete: () => { setVisible(false); document.body.style.overflow = previousOverflow; } })
+        gsap.timeline({ onComplete: () => { setVisible(false); document.body.style.overflow = previousOverflow; window.dispatchEvent(new Event("foodflow:intro-complete")); } })
           .to(element, { yPercent: -100, duration: .8, ease: "power3.inOut" })
           .fromTo(document.querySelector(".poster-hero"), { y: 120 }, { y: 0, duration: .8, ease: "power3.out" }, "<.15");
       };
-      Promise.all(preloads).then(() => window.setTimeout(finish, 1000));
+      Promise.all(preloads).then(() => { if (!disposed) loadedTimer = window.setTimeout(finish, 700); });
       const timeout = window.setTimeout(finish, 4500);
       const skip = element.querySelector<HTMLButtonElement>(".intro-skip");
       skip?.addEventListener("click", finish);
-      return () => { window.clearTimeout(timeout); skip?.removeEventListener("click", finish); loop.kill(); };
+      return () => { disposed = true; window.clearTimeout(timeout); window.clearTimeout(loadedTimer); skip?.removeEventListener("click", finish); loop.kill(); };
     }, element);
     return () => { ctx.revert(); document.body.style.overflow = previousOverflow; };
   }, []);
@@ -50,19 +52,20 @@ export function LandingIntro() {
 export function HorizontalCategories() {
   const root = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
-    if (!root.current || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const ctx = gsap.context(() => {
-      const track = root.current!.querySelector<HTMLElement>(".film-track");
+    const section = root.current;
+    if (!section) return;
+    const mm = gsap.matchMedia();
+    mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
+      const track = section.querySelector<HTMLElement>(".film-track");
       if (!track) return;
-      const travel = gsap.to(track, { x: () => -(track.scrollWidth - window.innerWidth), ease: "none", scrollTrigger: { trigger: root.current, start: "top top", end: () => `+=${track.scrollWidth - window.innerWidth}`, pin: true, scrub: .45, invalidateOnRefresh: true, snap: { snapTo: 1 / (CATEGORY_ORDER.length - 1), duration: .25 } } });
-      track.querySelectorAll<HTMLElement>(".film-panel").forEach((panel) => {
-        gsap.fromTo(panel.querySelector("img"), { xPercent: -5, scale: 1.16 }, { xPercent: 5, scale: 1.16, ease: "none", scrollTrigger: { trigger: panel, containerAnimation: travel, start: "left right", end: "right left", scrub: true } });
-        gsap.fromTo(panel.querySelector(".film-title"), { x: 70, opacity: .35 }, { x: -30, opacity: 1, ease: "none", scrollTrigger: { trigger: panel, containerAnimation: travel, start: "left right", end: "center center", scrub: true } });
-      });
-    }, root);
-    return () => ctx.revert();
+      const panels = track.querySelectorAll<HTMLElement>(".film-panel");
+      const measure = () => gsap.set(panels, { width: section.clientWidth, flexBasis: section.clientWidth });
+      measure();
+      gsap.to(track, { x: () => -(track.scrollWidth - section.clientWidth), ease: "none", scrollTrigger: { trigger: section, start: "top top", end: () => `+=${track.scrollWidth - section.clientWidth}`, pin: true, scrub: .65, invalidateOnRefresh: true, onRefreshInit: measure } });
+    }, section);
+    return () => mm.revert();
   }, []);
-  return <section className="film" ref={root} aria-label="Explore our eight food categories"><div className="film-track">{CATEGORY_ORDER.map((slug, index) => <article className="film-panel" key={slug}><Image src={photoFor(slug)} alt="" fill sizes="100vw" draggable={false}/><div className="film-shade"/><div className="film-top"><span>THE FOOD FLOW CUT</span><span>ALL YOUR FAVOURITES / IN THE FRAME</span></div><div className="film-title"><span>ONE MOOD.</span><br/>THEN ANOTHER.</div><div className="film-bottom"><span>{labels[slug]}</span><span>0{index + 1} / 08</span></div></article>)}</div></section>;
+  return <section className="film" ref={root} aria-label="Explore our eight food categories"><div className="film-track">{CATEGORY_ORDER.map((slug, index) => <article className="film-panel" key={slug}><Image src={editorialPhotoFor(slug)} alt="" fill sizes="100vw" draggable={false}/><div className="film-shade"/><div className="film-top"><span>THE FOOD FLOW CUT</span><span>ALL YOUR FAVOURITES / IN THE FRAME</span></div><div className="film-title"><span>ONE MOOD.</span><br/>THEN ANOTHER.</div><div className="film-bottom"><span>{labels[slug]}</span><span>0{index + 1} / 08</span></div></article>)}</div></section>;
 }
 
 export function ParallaxMotion() {

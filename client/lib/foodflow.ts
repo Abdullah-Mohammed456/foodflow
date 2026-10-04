@@ -100,6 +100,17 @@ const photos: Record<string, string> = {
 
 export const CATEGORY_ORDER = ["pizza", "burgers", "sandwiches", "fries-sides", "chicken", "drinks", "desserts", "combos-deals"];
 export const photoFor = (slug: string): string => photos[slug] ?? "/food/cosmos_1718309446.webp";
+const editorialPhotos: Record<string, string> = {
+  pizza: "/food/editorial-pizza.jpg",
+  burgers: "/food/cosmos_1965868063.webp",
+  sandwiches: "/food/sandwich.jpg",
+  "fries-sides": "/food/editorial-fries.jpg",
+  chicken: "/food/editorial-chicken.jpg",
+  drinks: "/food/editorial-drinks.jpg",
+  desserts: "/food/editorial-desserts.jpg",
+  "combos-deals": "/food/editorial-combo.jpg",
+};
+export const editorialPhotoFor = (slug: string): string => editorialPhotos[slug] ?? photoFor(slug);
 const itemPhotos: Record<string, string> = {
   "margherita-pizza": "/food/margherita.jpg",
   "pepperoni-pizza": "/food/pepperoni.jpg",

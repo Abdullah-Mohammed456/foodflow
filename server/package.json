@@ -14,7 +14,9 @@
     "db:seed": "tsx src/seed.ts",
     "db:seed:prod": "node dist/seed.js",
     "prisma:studio": "prisma studio",
-    "test": "tsx --test --test-concurrency=1 tests/*.test.ts"
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
+    "owner:bootstrap": "tsx src/bootstrap-owner.ts",
+    "owner:bootstrap:prod": "node dist/bootstrap-owner.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

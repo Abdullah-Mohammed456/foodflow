@@ -1,10 +1,13 @@
 # FoodFlow backend on Back4app Containers
 
-Back4app Containers currently lists a $0 monthly Free container with no credit
-card and no stated time limit. It allows one Dockerized web app with 0.25 shared
-CPU, 256 MB RAM, and 100 GB transfer. This is the nearest fit for FoodFlow's
-Express and Socket.IO backend while Vercel hosts the frontend and Neon hosts
-PostgreSQL. Test memory use and reliability before accepting real orders.
+Back4app's free container URL is temporary: it expires 60 minutes after a
+deployment starts. Redeploying restarts the window. A permanent container URL
+requires a paid plan. The free plan is unsuitable for continuous ordering.
+This was verified against [Back4app's September 2026 update](https://www.back4app.com/blog/deploy-node-app-dockerfile-back4app).
+Neon is separate; expiry of the API container does not delete the Neon database.
+
+The instructions below apply to a container with a working URL. Do not treat a
+successful one-hour preview as an ongoing production deployment.
 
 ## 1. Create the container app
 
@@ -41,11 +44,13 @@ Deploy `client/` as the Vercel project root. Set
 settings, then redeploy the frontend. Next.js embeds public environment values
 in the client build.
 
-FoodFlow's production authentication cookie uses `Secure; SameSite=None` across
-separate Vercel and Back4app domains. Some browsers block cross-site cookies.
-For reliable customer login, put both apps under one site, such as
-`www.yourdomain.com` and `api.yourdomain.com`, then test Safari and Chrome with
-third-party cookie blocking.
+The frontend proxies `/api/*` and `/health/*` to the configured backend through
+Next.js rewrites. Browser requests remain on the Vercel origin, so the
+HttpOnly production cookie uses `Secure; SameSite=Lax` without relying on
+third-party cookies. Socket.IO uses same-origin HTTP polling through the same
+proxy. Deploy both client and server for this authentication update, then test
+Safari and Chrome with third-party cookie blocking. Keep any `API_INTERNAL_URL`
+override pointed at the correct backend because it takes precedence for rewrites.
 
 ## 4. Check the API and grant owner access
 

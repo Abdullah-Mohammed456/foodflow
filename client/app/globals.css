@@ -45,7 +45,9 @@ h1,h2,h3,.display { font-family:Anton,Impact,sans-serif; font-weight:400; text-t
 .poster-meta { position:absolute; z-index:4; top:25px; left:5%; right:5%; display:flex; justify-content:space-between; gap:20px; font-size:10px; font-weight:700; letter-spacing:1.5px; }
 .poster-type { position:absolute; top:85px; left:5%; z-index:1; display:flex; flex-direction:column; font-family:Anton,Impact,sans-serif; font-size:clamp(230px,28vw,405px); line-height:.9; letter-spacing:-.026em; white-space:nowrap; cursor:default; user-select:none; }
 .poster-word { display:flex; background:url('/food/cosmos_1965868063.webp') center 51%/cover; color:transparent; background-clip:text; -webkit-background-clip:text; -webkit-text-stroke:1px #ffffff24; }
-.poster-word [data-letter] { display:inline-block; color:transparent; background:inherit; background-clip:text; -webkit-background-clip:text; transform-origin:50% 80%; transition:transform 70ms ease-out,filter 70ms ease-out,opacity 120ms ease-out,-webkit-text-stroke-color 120ms ease-out; will-change:transform; filter:blur(.7px); opacity:.78; }
+.poster-word { will-change:transform; }
+.poster-line { display:block; overflow:hidden; padding-bottom:.06em; }
+.poster-line>span { display:block; }
 .poster-note { position:absolute; z-index:3; top:64%; right:5%; width:200px; text-align:right; font-size:10px; line-height:1.8; letter-spacing:1px; text-shadow:0 2px 8px #000; }
 .poster-note i { display:block; width:30px; height:3px; margin:0 0 12px auto; background:var(--paper); }
 .poster-side { position:absolute; top:115px; right:5%; z-index:2; width:20%; display:flex; flex-direction:column; gap:25px; }
@@ -78,8 +80,8 @@ h1,h2,h3,.display { font-family:Anton,Impact,sans-serif; font-weight:400; text-t
 .intro-bottom { position:absolute; bottom:32px; left:5%; font-size:9px; letter-spacing:1px; }
 .intro-skip { position:absolute; bottom:24px; right:5%; border:0; border-bottom:1px solid; background:transparent; font-size:11px; font-weight:700; }
 .film { height:100svh; overflow:hidden; background:var(--ink); color:var(--paper); }
-.film-track { display:flex; width:800vw; height:100%; }
-.film-panel { position:relative; width:100vw; height:100%; flex:0 0 100vw; isolation:isolate; }
+.film-track { display:flex; width:max-content; height:100%; }
+.film-panel { position:relative; width:100vw; height:100%; flex:0 0 100vw; isolation:isolate; overflow:hidden; }
 .film-panel>img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .film-shade { position:absolute; inset:0; background:linear-gradient(#0008,#0005 50%,#000a); }
 .film-top,.film-bottom { position:absolute; left:5%; right:5%; z-index:2; display:flex; justify-content:space-between; gap:20px; }
@@ -403,7 +405,7 @@ h1,h2,h3,.display { font-family:Anton,Impact,sans-serif; font-weight:400; text-t
   .site-nav .action { display:none; }
   .site-nav nav { gap:18px; }
   .site-nav nav a { font-size:11px; }
-  .poster { height:820px; }
+  .poster { height:860px; }
   .poster-meta { font-size:7px; letter-spacing:.7px; }
   .poster-meta span:last-child { max-width:95px; text-align:right; }
   .poster-type { top:90px; left:5%; font-size:43vw; }
@@ -506,8 +508,11 @@ h1,h2,h3,.display { font-family:Anton,Impact,sans-serif; font-weight:400; text-t
 @media(prefers-reduced-motion:reduce) {
   html { scroll-behavior:auto; }
   *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
-  .poster-word [data-letter] { transform:none!important; filter:none!important; opacity:1!important; }
   .film { height:auto; overflow-x:auto; }
   .film-track { width:max-content; height:70svh; }
   .feature-reveal-stamp { display:none; }
+}
+@media(max-width:767px) {
+  .film { overflow-x:auto; scroll-snap-type:x mandatory; }
+  .film-panel { scroll-snap-align:start; }
 }
