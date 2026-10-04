@@ -11,11 +11,13 @@ const LETTERS = ["FAST", "FOOD"].map((word) => [...word]);
 const RADIUS = 240;
 gsap.registerPlugin(SplitText);
 
-function applyInfluence(el: HTMLElement, k: number) {
-  el.style.transform = `translate3d(0, ${(-26 * k).toFixed(1)}px, 0) scale(${(1 + .38 * k).toFixed(3)})`;
-  el.style.filter = `blur(${(1.5 * (1 - k)).toFixed(2)}px)`;
+function applyInfluence(el: HTMLElement, k: number, movement = 0, index = 0) {
+  const glitch = k * movement;
+  const direction = index % 2 === 0 ? 1 : -1;
+  el.style.transform = `translate3d(${(direction * 11 * glitch).toFixed(1)}px, ${(-26 * k + (index % 3 - 1) * 8 * glitch).toFixed(1)}px, 0) scale(${(1 + .38 * k).toFixed(3)}) skewX(${(direction * 5 * glitch).toFixed(2)}deg)`;
+  el.style.filter = `blur(${(1.5 * (1 - k) + 1.2 * glitch).toFixed(2)}px) drop-shadow(${(direction * 7 * glitch).toFixed(1)}px 0 0 rgba(238,77,54,${(.65 * glitch).toFixed(2)})) drop-shadow(${(-direction * 7 * glitch).toFixed(1)}px 0 0 rgba(87,190,205,${(.65 * glitch).toFixed(2)}))`;
   el.style.opacity = String(.78 + .22 * k);
-  el.style.webkitTextStrokeColor = `rgba(255,255,255,${(.14 + .45 * k).toFixed(2)})`;
+  el.style.webkitTextStrokeColor = `rgba(255,255,255,${(.14 + .45 * k + .32 * glitch).toFixed(2)})`;
 }
 
 function resetLetter(el: HTMLElement) { applyInfluence(el, 0); }
@@ -23,7 +25,24 @@ function resetLetter(el: HTMLElement) { applyInfluence(el, 0); }
 export function FastFoodHero() {
   const root = useRef<HTMLElement>(null);
   const pointer = useRef<{ x: number; y: number } | null>(null);
+  const lastPointer = useRef<{ x: number; y: number; at: number } | null>(null);
   const frame = useRef<number | null>(null);
+  const settle = useRef<number | null>(null);
+
+  const updateLetters = (movement: number) => {
+    const point = pointer.current;
+    if (!point) return;
+    const letters = Array.from(root.current?.querySelectorAll<HTMLElement>("[data-letter]") ?? []);
+    const distances = letters.map((el) => {
+      const box = el.getBoundingClientRect();
+      const transform = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+      return Math.hypot(point.x - (box.left + box.width / 2 - transform.m41), point.y - (box.top + box.height / 2 - transform.m42));
+    });
+    letters.forEach((el, index) => {
+      const t = Math.max(0, 1 - (distances[index] ?? Infinity) / RADIUS);
+      applyInfluence(el, t * t * (3 - 2 * t), movement, index);
+    });
+  };
 
   useLayoutEffect(() => {
     if (!root.current || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -36,29 +55,33 @@ export function FastFoodHero() {
       }
       gsap.fromTo(".poster-side figure", { y: 70, opacity: 0, rotate: 0 }, { y: 0, opacity: 1, rotate: (i: number) => i ? -5 : 5, duration: .85, ease: "power3.out", stagger: .15, delay: .75 });
     }, root);
-    return () => { ctx.revert(); if (frame.current !== null) cancelAnimationFrame(frame.current); };
+    return () => { ctx.revert(); if (frame.current !== null) cancelAnimationFrame(frame.current); if (settle.current !== null) window.clearTimeout(settle.current); };
   }, []);
 
   const onMove = (event: PointerEvent<HTMLElement>) => {
     if (event.pointerType === "touch" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     pointer.current = { x: event.clientX, y: event.clientY };
+    if (settle.current !== null) window.clearTimeout(settle.current);
     if (frame.current !== null) return;
     frame.current = requestAnimationFrame(() => {
       frame.current = null;
-      if (!pointer.current) return;
-      root.current?.querySelectorAll<HTMLElement>("[data-letter]").forEach((el) => {
-        const box = el.getBoundingClientRect();
-        const transform = new DOMMatrixReadOnly(getComputedStyle(el).transform);
-        const distance = Math.hypot(pointer.current!.x - (box.left + box.width / 2), pointer.current!.y - (box.top + box.height / 2 - transform.m42));
-        const t = Math.max(0, 1 - distance / RADIUS);
-        applyInfluence(el, t * t * (3 - 2 * t));
-      });
+      const point = pointer.current;
+      if (!point) return;
+      const now = performance.now();
+      const previous = lastPointer.current;
+      const speed = previous ? Math.hypot(point.x - previous.x, point.y - previous.y) / Math.max(16, now - previous.at) : 0;
+      lastPointer.current = { ...point, at: now };
+      updateLetters(Math.min(1, speed / 1.1));
+      settle.current = window.setTimeout(() => updateLetters(0), 100);
     });
   };
   const onLeave = () => {
     pointer.current = null;
+    lastPointer.current = null;
     if (frame.current !== null) cancelAnimationFrame(frame.current);
+    if (settle.current !== null) window.clearTimeout(settle.current);
     frame.current = null;
+    settle.current = null;
     root.current?.querySelectorAll<HTMLElement>("[data-letter]").forEach(resetLetter);
   };
 
