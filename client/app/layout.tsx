@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import "sweetalert2/dist/sweetalert2.min.css";
 import "./globals.css";
 import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { FloatingBag } from "@/components/floating-bag";
 import { PageMotion } from "@/components/page-motion";
 
 const SITE_URL = "https://foodflow-eg.vercel.app";
@@ -72,7 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             }),
           }}
         />
-        <Providers><SiteHeader />{children}<SiteFooter /><PageMotion /></Providers>
+        <Providers><SiteHeader />{children}<SiteFooter /><FloatingBag /><PageMotion /></Providers>
       </body>
     </html>
   );

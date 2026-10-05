@@ -22,7 +22,6 @@ function ProductCard({ item, index }: { item: MenuItem; index: number }) {
 }
 
 export function MenuExplorer({ compact = false, initialCategory = "" }: { compact?: boolean; initialCategory?: string }) {
-  const { lines, count } = useCart();
   const [category, setCategory] = useState(initialCategory);
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
@@ -38,7 +37,7 @@ export function MenuExplorer({ compact = false, initialCategory = "" }: { compac
     {menu.data && <><div className="product-grid">{items?.map((item, index) => <ProductCard key={item.id} item={item} index={index} />)}</div>{!items?.length && <p className="state-message">Nothing on the menu matches that craving. Try another category or search.</p>}</>}
     {!compact && menu.data && menu.data.pagination.pageCount > 1 && <div className="pagination"><button disabled={page === 1} onClick={() => setPage(page - 1)}>← Previous</button><span>{page} / {menu.data.pagination.pageCount}</span><button disabled={page >= menu.data.pagination.pageCount} onClick={() => setPage(page + 1)}>Next →</button></div>}
     {compact && <div className="more-menu"><Link className="action" href="/menu">SEE THE FULL MENU <span>→</span></Link></div>}
-    {!compact && count > 0 && <Link className="mobile-bag-dock" href="/cart"><span>{count} {count === 1 ? "ITEM" : "ITEMS"} IN YOUR BAG</span><strong>{money(lines.reduce((sum, line) => sum + Number(line.unitPrice) * line.quantity, 0))}</strong><b>VIEW BAG →</b></Link>}
+
   </section>;
 }
 

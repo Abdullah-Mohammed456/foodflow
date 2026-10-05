@@ -11,8 +11,10 @@ export function PageMotion() {
     if (!main || pathname === "/" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const seen = new WeakSet<Element>();
     const ctx = gsap.context(() => {
-      gsap.fromTo(".page-lead-copy", { y: 30, opacity: .3 }, { y: 0, opacity: 1, duration: .65, ease: "power3.out" });
-      gsap.fromTo(".page-lead-image", { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: .85, ease: "power3.inOut" });
+      const copy = main.querySelector(".page-lead-copy");
+      const image = main.querySelector(".page-lead-image");
+      if (copy) gsap.fromTo(copy, { y: 30, opacity: .3 }, { y: 0, opacity: 1, duration: .65, ease: "power3.out" });
+      if (image) gsap.fromTo(image, { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: .85, ease: "power3.inOut" });
     }, main);
     const viewport = new IntersectionObserver((entries) => {
       const visible = entries.filter((entry) => entry.isIntersecting).map((entry) => entry.target);

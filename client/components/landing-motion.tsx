@@ -10,20 +10,30 @@ gsap.registerPlugin(ScrollTrigger);
 
 const labels: Record<string, string> = { pizza: "PIZZA", burgers: "BURGERS", sandwiches: "SANDWICHES", "fries-sides": "FRIES & SIDES", chicken: "CHICKEN", drinks: "DRINKS", desserts: "DESSERTS", "combos-deals": "COMBOS & DEALS" };
 
+function introSeen() {
+  try { return sessionStorage.getItem("foodflow-intro-seen") === "1"; }
+  catch { return false; }
+}
+
+function rememberIntro() {
+  try { sessionStorage.setItem("foodflow-intro-seen", "1"); }
+  catch { return; }
+}
+
 export function LandingIntro() {
   const root = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(true);
   useLayoutEffect(() => {
     const element = root.current;
     if (!element) return;
-    if (sessionStorage.getItem("foodflow-intro-seen") || matchMedia("(prefers-reduced-motion: reduce)").matches) { element.style.visibility = "hidden"; const frame = requestAnimationFrame(() => { setVisible(false); window.dispatchEvent(new Event("foodflow:intro-complete")); }); return () => cancelAnimationFrame(frame); }
+    if (introSeen() || matchMedia("(prefers-reduced-motion: reduce)").matches) { element.style.visibility = "hidden"; const frame = requestAnimationFrame(() => { setVisible(false); window.dispatchEvent(new Event("foodflow:intro-complete")); }); return () => cancelAnimationFrame(frame); }
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const ctx = gsap.context(() => {
       const bites = element.querySelectorAll<SVGCircleElement>(".intro-bite");
       const loop = gsap.timeline({ repeat: -1 });
       loop.to(bites, { attr: { r: 40 }, duration: .35, stagger: .22, ease: "power2.out" }).to(bites, { attr: { r: 0 }, duration: .1, stagger: .02, delay: .4 });
-      const images = ["/food/cosmos_1965868063.webp", "/food/pizza.jpg", "/food/cosmos_1096855834.webp", "/food/combo.jpg"];
+      const images = ["/food/cosmos_1965868063.webp", "/food/pizza.jpg", "/food/cosmos_1096855834.webp", "/food/combo.jpg", "/food/hero-reference.png", "/food/burger-story/ingredients.png", "/food/burger-story/empty-box.png"];
       const preloads = images.map((src) => new Promise<void>((resolve) => { const img = new window.Image(); img.onload = () => resolve(); img.onerror = () => resolve(); img.src = src; if (img.complete) resolve(); }));
       let ended = false;
       let disposed = false;
@@ -32,10 +42,10 @@ export function LandingIntro() {
         if (ended || disposed) return;
         ended = true;
         loop.kill();
-        sessionStorage.setItem("foodflow-intro-seen", "1");
+        rememberIntro();
         gsap.timeline({ onComplete: () => { setVisible(false); document.body.style.overflow = previousOverflow; window.dispatchEvent(new Event("foodflow:intro-complete")); } })
           .to(element, { yPercent: -100, duration: .8, ease: "power3.inOut" })
-          .fromTo(document.querySelector(".poster-hero"), { y: 120 }, { y: 0, duration: .8, ease: "power3.out" }, "<.15");
+          .fromTo(document.querySelector(".cinematic-hero"), { y: 120 }, { y: 0, duration: .8, ease: "power3.out" }, "<.15");
       };
       Promise.all(preloads).then(() => { if (!disposed) loadedTimer = window.setTimeout(finish, 700); });
       const timeout = window.setTimeout(finish, 4500);
@@ -61,7 +71,7 @@ export function HorizontalCategories() {
       const panels = track.querySelectorAll<HTMLElement>(".film-panel");
       const measure = () => gsap.set(panels, { width: section.clientWidth, flexBasis: section.clientWidth });
       measure();
-      gsap.to(track, { x: () => -(track.scrollWidth - section.clientWidth), ease: "none", scrollTrigger: { trigger: section, start: "top top", end: () => `+=${track.scrollWidth - section.clientWidth}`, pin: true, scrub: .65, invalidateOnRefresh: true, onRefreshInit: measure } });
+      gsap.to(track, { x: () => -(track.scrollWidth - section.clientWidth), ease: "none", scrollTrigger: { trigger: section, start: "top top", end: () => `+=${track.scrollWidth - section.clientWidth}`, pin: true, scrub: .5, invalidateOnRefresh: true, refreshPriority: -10, onRefreshInit: measure } });
     }, section);
     return () => mm.revert();
   }, []);
