@@ -15,3 +15,7 @@ Source license: [Pexels License](https://www.pexels.com/license/).
 The files are served locally from `client/public/food/`. No AI images were
 created for this collection. Existing images supplied by the project owner
 are not covered by this new source list.
+
+## Real burger scroll film (2026-10-05)
+
+Ron Lach, Pexels: https://www.pexels.com/video/rotating-shot-of-cheeseburger-8879540/ . Real photographic footage, not AI. Four seconds (2–6 seconds) extracted into 96 WebP frames, 416×788, plus a 1080×2048 poster. Rejected experiment; retained locally in output/real-burger-test-v1 and not shipped. Raw source remains outside Git.

@@ -9,3 +9,5 @@ foodflow-mockups
 markdown-files
 output
 README.md
+docs
+**/*.md

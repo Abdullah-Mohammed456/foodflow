@@ -21,7 +21,7 @@ export function FeatureReveal() {
       const route = root.current?.querySelector<SVGPathElement>(".feature-reveal-route");
       const stamp = root.current?.querySelector<SVGGElement>(".feature-reveal-stamp");
       if (!frame || !route || !stamp) return;
-      gsap.timeline({ scrollTrigger: { trigger: root.current, start: "top top", end: "+=100%", pin: true, scrub: .75 } })
+      gsap.timeline({ scrollTrigger: { trigger: root.current, start: "top 80%", end: "top 15%", scrub: .35 } })
         .fromTo(frame, { clipPath: "inset(38% 0 38% 0 round 22px)" }, { clipPath: "inset(0% 0 0% 0 round 0px)", ease: "none", duration: 1 }, 0)
         .fromTo(stamp, { opacity: 0 }, { opacity: 1, duration: .15 }, .12)
         .to(stamp, { motionPath: { path: route, align: route, alignOrigin: [.5, .5] }, ease: "none", duration: .85 }, .1);
@@ -38,8 +38,8 @@ export function FeatureReveal() {
 
   return <section className="feature-reveal" ref={root} aria-label="Choose your craving">
     <div className="feature-reveal-frame">
-      <Image src="/food/pizza.jpg" alt="Freshly baked pizza" fill sizes="100vw" draggable={false}/>
-      <div className="feature-reveal-chicken" ref={chicken} aria-hidden={!showChicken}><Image src="/food/chicken.jpg" alt="Crispy fried chicken" fill sizes="100vw" draggable={false}/></div>
+      <Image src="/media/menu/pizza.jpg" alt="Freshly baked pizza" fill sizes="100vw" draggable={false}/>
+      <div className="feature-reveal-chicken" ref={chicken} aria-hidden={!showChicken}><Image src="/media/menu/chicken.jpg" alt="Crispy fried chicken" fill sizes="100vw" draggable={false}/></div>
       <div className="feature-reveal-shade"/>
       <div className="feature-reveal-top"><span>FOOD FLOW / THE GOOD STUFF</span><span>01 / 02</span></div>
       <div className="feature-reveal-copy"><span className="eyebrow">ONE CRAVING LEADS TO ANOTHER</span><h2>GO BIG.<br/><em>GO AGAIN.</em></h2><p>Pizza tonight. Chicken tomorrow. Every craving gets its moment.</p><div className="feature-reveal-actions"><button type="button" onClick={toggle} aria-pressed={showChicken}>{showChicken ? "SHOW THE PIZZA" : "SHOW THE CHICKEN"}<span aria-hidden="true">→</span></button><Link href="/menu">EXPLORE THE MENU <span aria-hidden="true">→</span></Link></div></div>

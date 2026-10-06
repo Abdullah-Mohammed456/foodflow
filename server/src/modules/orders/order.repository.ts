@@ -11,6 +11,7 @@ export type OrderCreateData = Prisma.OrderUncheckedCreateInput;
 export class OrderWriteConflictError extends Error {}
 
 export interface IOrderTransaction {
+  isRestaurantStaff(userId: string, restaurantId: string): Promise<boolean>;
   findCheckout(customerId: string, checkoutKey: string): Promise<OrderWithItems | null>;
   findRestaurant(id: string): Promise<{ id: string; isOpen: boolean } | null>;
   checkoutItems(ids: string[]): Promise<CheckoutMenuItem[]>;
@@ -45,6 +46,7 @@ export class PrismaOrderRepository implements IOrderRepository {
 
   private checkoutRepository(db: Prisma.TransactionClient): IOrderTransaction {
     return {
+      isRestaurantStaff: async (userId, restaurantId) => !!await db.restaurantMember.findUnique({ where: { userId_restaurantId: { userId, restaurantId } }, select: { id: true } }),
       findCheckout: (customerId, checkoutKey) => db.order.findUnique({
         where: { customerId_checkoutKey: { customerId, checkoutKey } }, include: orderDetails,
       }),

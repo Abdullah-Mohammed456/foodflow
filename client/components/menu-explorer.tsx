@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { FoodImage as Image } from "@/components/food-image";
 import { useCart } from "@/components/cart-provider";
 import { CATEGORY_ORDER, human, itemPhoto, money, photoFor, type MenuItem } from "@/lib/foodflow";
 import { useMenu } from "@/lib/queries";
@@ -15,7 +15,7 @@ function ProductCard({ item, index }: { item: MenuItem; index: number }) {
   const [size, setSize] = useState(variants[0]?.size ?? "REGULAR");
   const selected = variants.find((variant) => variant.size === size) ?? variants[0];
   return <article className="product-card">
-    <div className="product-image"><Image src={itemPhoto(item)} alt={item.name} width={600} height={500} sizes="(max-width: 650px) 50vw, (max-width: 1000px) 45vw, 23vw" unoptimized draggable={false} /><span className="product-number">{String(index + 1).padStart(2, "0")}</span>{item.isCombo && <span className="photo-tag">THE WHOLE DEAL</span>}{item.isSpicy && <span className="photo-tag">SPICY</span>}</div>
+    <div className="product-image"><Image src={itemPhoto(item)} alt={item.name} width={600} height={500} sizes="(max-width: 650px) 50vw, (max-width: 1000px) 45vw, 23vw" draggable={false} /><span className="product-number">{String(index + 1).padStart(2, "0")}</span>{item.isCombo && <span className="photo-tag">THE WHOLE DEAL</span>}{item.isSpicy && <span className="photo-tag">SPICY</span>}</div>
     <div className="product-meta"><div><span className="eyebrow muted">{item.category.name} / {item.prepTimeMinutes} MIN PREP</span><h3>{item.name}</h3><p>{item.description}</p></div><span className="price">{selected && money(selected.price)}</span></div>
     <div className="product-actions"><label>Size <select value={size} onChange={(event) => setSize(event.target.value as typeof size)} aria-label={`Size for ${item.name}`}>{variants.map((variant) => <option key={variant.id} value={variant.size}>{human(variant.size)}</option>)}</select></label><button className="small-action" type="button" disabled={!selected} onClick={() => selected && add({ menuItemId: item.id, name: item.name, image: itemPhoto(item), size: selected.size, unitPrice: selected.price, quantity: 1, variants: variants.map((variant) => ({ size: variant.size, price: variant.price })) })}>ADD +</button></div>
   </article>;

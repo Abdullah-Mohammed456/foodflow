@@ -29,7 +29,12 @@ export class ApiError extends Error {
   readonly code: string;
   readonly details?: unknown;
 
-  constructor(status: number, code: string, message: string, details?: unknown) {
+  constructor(
+    status: number,
+    code: string,
+    message: string,
+    details?: unknown,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -42,16 +47,20 @@ export async function apiFetch<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`${typeof window === "undefined" ? API_BASE : ""}${path}`, {
-    ...init,
-    credentials: "include",
-    headers: { "content-type": "application/json", ...init?.headers },
-  });
+  const res = await fetch(
+    `${typeof window === "undefined" ? API_BASE : ""}${path}`,
+    {
+      ...init,
+      signal: init?.signal
+        ? AbortSignal.any([init.signal, AbortSignal.timeout(20_000)])
+        : AbortSignal.timeout(20_000),
+      credentials: "include",
+      headers: { "content-type": "application/json", ...init?.headers },
+    },
+  );
 
   const body = (await res.json().catch(() => null)) as
-    | ApiSuccess<T>
-    | ApiFailure
-    | null;
+    ApiSuccess<T> | ApiFailure | null;
 
   if (!res.ok || body === null || body.success === false) {
     const failure = body !== null && body.success === false ? body : null;

@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { ApiError } from "@/lib/api";
 import { CartProvider } from "@/components/cart-provider";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -9,7 +10,7 @@ export function Providers({ children }: { children: ReactNode }) {
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false },
+          queries: { staleTime: 60_000, retry: (count, error) => count < 1 && !(error instanceof ApiError && error.status >= 400 && error.status < 500), refetchOnWindowFocus: false },
         },
       }),
   );

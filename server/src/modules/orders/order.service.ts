@@ -31,6 +31,7 @@ export class OrderService {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const result = await this.repo.transaction(async (repo) => {
+          if (await repo.isRestaurantStaff(customerId, input.restaurantId)) throw new AppError("FORBIDDEN", "Staff accounts cannot place customer orders. Use a separate customer account.");
           const existing = await repo.findCheckout(customerId, input.checkoutKey);
           if (existing) {
             if (existing.requestHash !== requestHash) {

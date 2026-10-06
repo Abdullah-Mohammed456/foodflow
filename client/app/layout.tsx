@@ -6,6 +6,8 @@ import { Providers } from "./providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { FloatingBag } from "@/components/floating-bag";
+import { CustomerBoundary } from "@/components/customer-boundary";
+import { ButtonMotion } from "@/components/button-motion";
 import { PageMotion } from "@/components/page-motion";
 
 const SITE_URL = "https://foodflow-eg.vercel.app";
@@ -41,13 +43,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: "FoodFlow — Pizza, Burgers & Combos in Egypt",
     description: SITE_DESCRIPTION,
-    images: [{ url: "/food/combo.jpg", width: 1200, height: 630, alt: "FoodFlow burger, fries and drink combo" }],
+    images: [{ url: "/media/menu/combo.jpg", width: 1200, height: 630, alt: "FoodFlow burger, fries and drink combo" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "FoodFlow — Pizza, Burgers & Combos in Egypt",
     description: SITE_DESCRIPTION,
-    images: ["/food/combo.jpg"],
+    images: ["/media/menu/combo.jpg"],
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.webmanifest",
@@ -56,8 +58,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('foodflow-theme');document.documentElement.dataset.theme=t==='dark'?'dark':'light'}catch(e){}})()` }}/>
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -74,7 +78,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             }),
           }}
         />
-        <Providers><SiteHeader />{children}<SiteFooter /><FloatingBag /><PageMotion /></Providers>
+        <Providers><SiteHeader /><CustomerBoundary>{children}</CustomerBoundary><SiteFooter /><FloatingBag /><PageMotion /><ButtonMotion /></Providers>
       </body>
     </html>
   );

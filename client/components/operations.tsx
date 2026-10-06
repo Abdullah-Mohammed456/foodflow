@@ -23,11 +23,11 @@ export function KitchenPage() {
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState("");
   const [now, setNow] = useState(0);
-  const queue = useQuery({ queryKey: ["kitchen", id], queryFn: () => apiFetch<Page<Order>>(`/api/restaurants/${id}/kitchen/orders?limit=100`), enabled: !!id && !!user.data && access.canUseKitchen, refetchInterval: 15000 });
+  const queue = useQuery({ queryKey: ["kitchen", id], queryFn: () => apiFetch<Page<Order>>(`/api/restaurants/${id}/kitchen/orders?limit=100`), enabled: !!id && !!user.data && access.canUseKitchen, refetchInterval: 30000 });
   useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 30000); const initial = window.setTimeout(() => setNow(Date.now()), 0); return () => { window.clearInterval(timer); window.clearTimeout(initial); }; }, []);
   useEffect(() => {
     if (!id || !user.data || !access.canUseKitchen) return;
-    const socket = io({ path: "/api/socket.io", transports: ["polling"], withCredentials: true });
+    const socket = io({ path: "/api/socket.io", addTrailingSlash: false, transports: ["polling"], withCredentials: true });
     const refresh = () => { client.invalidateQueries({ queryKey: ["kitchen", id] }); };
     socket.on("connect", () => { socket.emit("kitchen.subscribe", { restaurantId: id }, refresh); refresh(); });
     for (const event of ["order.created", "order.confirmed", "order.preparing", "order.ready", "order.completed", "order.cancelled"]) socket.on(event, refresh);
@@ -42,13 +42,13 @@ export function KitchenPage() {
   const statuses: OrderStatus[] = ["PENDING", "CONFIRMED", "PREPARING", "READY"];
   const orders = queue.data?.items ?? [];
   return <main className="interior wrap">
-    <PageLead eyebrow="LIVE SERVICE" title="THE KITCHEN." description="Every order in motion. Keep the line moving and the food hot." image="/food/cosmos_1096855834.webp" imageAlt="Golden fries" chapter="06"/>
+    <PageLead eyebrow="LIVE SERVICE" title="THE KITCHEN." description="Every order in motion. Keep the line moving and the food hot." image="/media/menu/cosmos_1096855834.webp" imageAlt="Golden fries" chapter="06"/>
     {user.isError && <div className="empty-panel"><h2>Staff sign-in required.</h2><p>Sign in with your kitchen account to see the live service board.</p><Link className="action" href="/login?next=/kitchen">SIGN IN →</Link></div>}
     {user.data && !access.isChecking && !access.canUseKitchen && <div className="empty-panel"><h2>Kitchen access needed.</h2><p>This board is for Food Flow staff. Ask the owner to add your account.</p><Link className="action" href="/account">YOUR ACCOUNT →</Link></div>}
     {(access.isChecking || (queue.isPending && access.canUseKitchen)) && <p className="state-message" role="status">Setting up the live board…</p>}
     <ErrorMessage error={queue.error ?? error}/>
     {queue.data && <>
-      <div className="kitchen-summary"><div><span>ON THE LINE</span><strong>{orders.length}</strong></div><div><span>PREPARING</span><strong>{orders.filter((order) => order.status === "PREPARING").length}</strong></div><div><span>READY TO GO</span><strong>{orders.filter((order) => order.status === "READY").length}</strong></div><button type="button" onClick={() => queue.refetch()}>REFRESH BOARD →</button></div>
+      <div className="kitchen-summary"><div><span>ON THE LINE</span><strong>{orders.length}</strong></div><div><span>PREPARING</span><strong>{orders.filter((order) => order.status === "PREPARING").length}</strong></div><div><span>READY TO GO</span><strong>{orders.filter((order) => order.status === "READY").length}</strong></div><button className="action" type="button" disabled={queue.isFetching} aria-busy={queue.isFetching} onClick={() => queue.refetch()}>{queue.isFetching ? "REFRESHING…" : "REFRESH BOARD"}</button></div>
       <div className="kitchen-board">{statuses.map((status) => <section className="kitchen-column" key={status} aria-label={`${human(status)} orders`}><div className="kitchen-column-head"><h2>{human(status)}</h2><span>{orders.filter((order) => order.status === status).length}</span></div><div className="kitchen-column-body">{orders.filter((order) => order.status === status).map((order) => {
         const minutes = now ? Math.ceil((Date.parse(order.prepDueAt) - now) / 60000) : null;
         return <article className={`kitchen-ticket ${minutes !== null && minutes < 0 ? "late" : ""}`} key={order.id}>
@@ -84,7 +84,7 @@ export function AdminPage() {
   const id = restaurant.data?.id;
   const [tab, setTab] = useState<"overview" | "orders" | "menu" | "staff" | "settings">("overview");
   return <main className="interior wrap">
-    <PageLead eyebrow="THE CONTROL ROOM" title="BACK OFFICE." description="A clear view of the rush, the menu, and the people who make it happen." image="/food/pizza.jpg" imageAlt="Fresh pizza" chapter="07"/>
+    <PageLead eyebrow="THE CONTROL ROOM" title="BACK OFFICE." description="A clear view of the rush, the menu, and the people who make it happen." image="/media/menu/pizza.jpg" imageAlt="Fresh pizza" chapter="07"/>
     {user.isError && <div className="empty-panel"><h2>Manager sign-in required.</h2><p>Sign in with a manager or owner account to open the back office.</p><Link className="action" href="/login?next=/admin">SIGN IN →</Link></div>}
     {user.data && access.isChecking && <p className="state-message" role="status">Checking your access…</p>}
     {user.data && !access.isChecking && !access.canManage && <div className="empty-panel"><h2>Manager access needed.</h2><p>This area is for Food Flow managers and owners.</p><Link className="action" href="/account">YOUR ACCOUNT →</Link></div>}
@@ -93,7 +93,7 @@ export function AdminPage() {
 }
 
 function ManagerOrdersTab({ id }: { id: string }) {
-  const orders = useQuery({ queryKey: ["manager-orders", id], queryFn: () => apiFetch<Page<Order>>(`/api/restaurants/${id}/kitchen/orders?limit=100`), refetchInterval: 15000 });
+  const orders = useQuery({ queryKey: ["manager-orders", id], queryFn: () => apiFetch<Page<Order>>(`/api/restaurants/${id}/kitchen/orders?limit=100`), refetchInterval: 30000 });
   return <section className="operations-content"><div className="panel-heading"><div><span className="eyebrow">THE LIVE LINE</span><h2>Orders in motion.</h2></div><Link className="action" href="/kitchen">OPEN KITCHEN BOARD →</Link></div>{orders.isPending && <p role="status">Loading active orders…</p>}<ErrorMessage error={orders.error}/>{orders.data && <><p className="muted">{orders.data.pagination.total} active orders, sorted by preparation deadline.</p>{orders.data.items.length === 0 && <div className="empty-panel"><h2>All clear.</h2><p>New orders will appear here as soon as they arrive.</p></div>}<div className="manager-order-list">{orders.data.items.map((order) => <article className="manager-order-row" key={order.id}><div><span className="eyebrow">{human(order.orderType)} / {new Date(order.createdAt).toLocaleTimeString("en", { hour: "numeric", minute: "2-digit" })}</span><h3>#{order.publicId.slice(-8).toUpperCase()}</h3><p>{order.items.map((item) => `${item.quantity} × ${item.nameSnapshot}`).join(" · ")}</p></div><div><span className={`status status-${order.status.toLowerCase()}`}>{human(order.status)}</span><strong>{money(order.total)}</strong></div></article>)}</div></>}</section>;
 }
 

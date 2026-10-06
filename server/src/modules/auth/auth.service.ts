@@ -77,6 +77,10 @@ export class AuthService {
     }
   }
 
+  async restaurantAccess(userId: string, restaurantId: string) {
+    return { role: await this.repo.findRestaurantRole(userId, restaurantId) };
+  }
+
   private toSafeUser(user: AuthProfile): SafeUser {
     return {
       id: user.id,

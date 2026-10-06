@@ -1,8 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { z } from "zod";
 import { successToast, warningToast } from "@/lib/alerts";
+import { ApiError } from "@/lib/api";
+import { useStaffAccess, useUser } from "@/lib/queries";
 import type { CartLine, MenuItem } from "@/lib/foodflow";
 
 interface CartContextValue {
@@ -29,9 +31,29 @@ const cartSchema = z.array(z.object({
 })).max(50);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const access = useStaffAccess();
+  const user = useUser();
   const [lines, setLines] = useState<CartLine[]>([]);
   const [ready, setReady] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  const lastUserId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (user.isPending) return;
+    const currentId = user.data?.id ?? null;
+    if (currentId) {
+      if (lastUserId.current && lastUserId.current !== currentId) setLines([]);
+      lastUserId.current = currentId;
+      return;
+    }
+    const signedOut =
+      (user.status === "success" && !user.data) ||
+      (user.isError && user.error instanceof ApiError && user.error.status === 401);
+    if (signedOut && lastUserId.current) {
+      lastUserId.current = null;
+      setLines([]);
+    }
+  }, [user.data, user.status, user.isPending, user.isError, user.error]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -57,9 +79,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     return () => { active = false; };
   }, [lines, ready]);
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if (event.key && event.key !== STORAGE_KEY) return;
+      try {
+        const parsed = cartSchema.safeParse(JSON.parse(event.newValue ?? "[]"));
+        setLines(parsed.success ? parsed.data : []);
+      } catch { setLines([]); }
+    };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, []);
   useEffect(() => { if (!announcement) return; const timer = window.setTimeout(() => setAnnouncement(""), 3200); return () => window.clearTimeout(timer); }, [announcement]);
 
   const add = (line: CartLine) => {
+    if (access.isStaff || access.isChecking || access.error) return;
     if (lines.length >= 50 && !lines.some((item) => item.menuItemId === line.menuItemId && item.size === line.size)) {
       setAnnouncement("Your bag can hold up to 50 different item sizes.");
       void warningToast("YOUR BAG IS FULL.", "Your bag can hold up to 50 different item sizes.");

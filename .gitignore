@@ -14,3 +14,10 @@ markdown-files/
 .owner-credentials.json
 server/.owner-credentials.json
 server/.env.production.local
+
+# Local references, notes and raw media
+output/
+docs/
+*.md
+client/public/food/
+*.tsbuildinfo

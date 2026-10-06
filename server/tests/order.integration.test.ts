@@ -72,6 +72,17 @@ test("M4 orders API with isolated PostgreSQL", { skip: !databaseUrl }, async (t)
     assert.equal((await request("", "GET", undefined, "")).status, 401);
     assert.equal((await request("", "POST", cart(), "admin")).status, 403);
   });
+  await t.test("restaurant staff cannot create customer orders even with a CUSTOMER token", async () => {
+    const count = await prisma.order.count();
+    for (const role of ["OWNER", "MANAGER", "KITCHEN"] as const) {
+      await prisma.restaurantMember.upsert({ where: { userId_restaurantId: { userId: "other", restaurantId: "branch" } }, create: { userId: "other", restaurantId: "branch", role }, update: { role } });
+      const denied = await request("", "POST", cart(), "other");
+      assert.equal(denied.status, 403);
+      assert.equal(denied.body.error.code, "FORBIDDEN");
+    }
+    assert.equal(await prisma.order.count(), count);
+    await prisma.restaurantMember.deleteMany({ where: { userId: "other" } });
+  });
   await t.test("server prices decimals and combos and persists snapshots", async () => {
     const result = await request("", "POST", cart());
     assert.equal(result.status, 201);
