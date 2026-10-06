@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import gsap from "gsap";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "@/components/cart-provider";
@@ -235,8 +241,16 @@ export function SiteHeader() {
               Account
             </RollLink>
           )}
-          {access.canUseKitchen && <Link href="/kitchen">Kitchen</Link>}
-          {access.canManage && <Link href="/admin">Manage</Link>}
+          {access.canUseKitchen && (
+            <RollLink href="/kitchen" active={pathname === "/kitchen"}>
+              Kitchen
+            </RollLink>
+          )}
+          {access.canManage && (
+            <RollLink href="/admin" active={pathname === "/admin"}>
+              Manage
+            </RollLink>
+          )}
           {user ? (
             <RollButton
               onClick={signOut}
