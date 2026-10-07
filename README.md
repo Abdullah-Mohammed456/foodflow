@@ -2,11 +2,11 @@
 
 Fast-food ordering platform for a single-brand restaurant in Egypt: pizza, burgers, sandwiches, fries and sides, chicken, drinks, desserts, and combo deals.
 
-| Tech | Deployment |
-| --- | --- |
+| Tech                                                        | Deployment       |
+| ----------------------------------------------------------- | ---------------- |
 | Next.js App Router, TypeScript, Tailwind v4, TanStack Query | Client on Vercel |
-| Express, TypeScript, Prisma 7, Zod, Socket.IO | Server on Render |
-| PostgreSQL | Database on Neon |
+| Express, TypeScript, Prisma 7, Zod, Socket.IO               | Server on Render |
+| PostgreSQL                                                  | Database on Neon |
 
 Live demo: https://foodflow-eg.vercel.app
 
@@ -59,27 +59,27 @@ The manager and kitchen sides are full workspaces behind role checks. A normal v
 
 ## Roles and permissions
 
-| Route | Customer | KITCHEN | MANAGER | OWNER |
-| --- | --- | --- | --- | --- |
-| `/`, `/menu`, `/cart` | Yes | Staff workspace notice | Staff workspace notice | Staff workspace notice |
+| Route                                       | Customer        | KITCHEN                | MANAGER                | OWNER                  |
+| ------------------------------------------- | --------------- | ---------------------- | ---------------------- | ---------------------- |
+| `/`, `/menu`, `/cart`                       | Yes             | Staff workspace notice | Staff workspace notice | Staff workspace notice |
 | `/checkout`, `/orders`, `/orders/:publicId` | Own orders only | Staff workspace notice | Staff workspace notice | Staff workspace notice |
-| `/account` | Yes | Yes | Yes | Yes |
-| `/kitchen` | Denied | Yes | Yes | Yes |
-| `/admin` | Denied | Denied | Yes | Yes |
+| `/account`                                  | Yes             | Yes                    | Yes                    | Yes                    |
+| `/kitchen`                                  | Denied          | Yes                    | Yes                    | Yes                    |
+| `/admin`                                    | Denied          | Denied                 | Yes                    | Yes                    |
 
 Server rules: prices, permissions, totals, and order state are server authoritative. A public signup creates a customer, never staff. The global ADMIN role alone grants nothing without restaurant membership. Customers can only cancel their own PENDING orders and can only read their own orders.
 
 ## Tech stack
 
-| Area | Technology |
-| --- | --- |
-| Client | Next.js App Router, TypeScript strict, Tailwind v4, TanStack Query, Socket.IO client, GSAP, Three.js, SweetAlert2, Zod |
-| Server | Express, TypeScript, Prisma 7, Zod, Socket.IO, scrypt password hashing, JWT in HttpOnly cookies, Helmet, express-rate-limit |
-| Database | PostgreSQL on Neon, Prisma migrations, Decimal money fields, idempotency and financial constraints |
-| Auth | HttpOnly `foodflow_access` cookie, JWT access tokens, restaurant membership roles |
-| Real-time | Socket.IO on `/api/socket.io`, cookie auth, `user:{id}` and `restaurant:{id}:kitchen` rooms, events `order.created`, `order.confirmed`, `order.preparing`, `order.ready`, `order.completed`, `order.cancelled` |
-| Animation and 3D | GSAP ScrollTrigger and timelines, Three.js restaurant hero and category gates, CSS loading bar |
-| Hosting | Vercel for `client/`, Render for `server/` with `/health/ready` checks, Neon for PostgreSQL |
+| Area             | Technology                                                                                                                                                                                                     |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Client           | Next.js App Router, TypeScript strict, Tailwind v4, TanStack Query, Socket.IO client, GSAP, Three.js, SweetAlert2, Zod                                                                                         |
+| Server           | Express, TypeScript, Prisma 7, Zod, Socket.IO, scrypt password hashing, JWT in HttpOnly cookies, Helmet, express-rate-limit                                                                                    |
+| Database         | PostgreSQL on Neon, Prisma migrations, Decimal money fields, idempotency and financial constraints                                                                                                             |
+| Auth             | HttpOnly `foodflow_access` cookie, JWT access tokens, restaurant membership roles                                                                                                                              |
+| Real-time        | Socket.IO on `/api/socket.io`, cookie auth, `user:{id}` and `restaurant:{id}:kitchen` rooms, events `order.created`, `order.confirmed`, `order.preparing`, `order.ready`, `order.completed`, `order.cancelled` |
+| Animation and 3D | GSAP ScrollTrigger and timelines, Three.js restaurant hero and category gates, CSS loading bar                                                                                                                 |
+| Hosting          | Vercel for `client/`, Render for `server/` with `/health/ready` checks, Neon for PostgreSQL                                                                                                                    |
 
 ## Architecture
 
@@ -141,23 +141,23 @@ cp client/.env.example client/.env.local
 
 ### Environment variables
 
-| File | Name | Description |
-| --- | --- | --- |
-| `server/.env` | `DATABASE_URL` | Pooled PostgreSQL URL used by the app |
-| `server/.env` | `DIRECT_URL` | Direct PostgreSQL URL used by migrations |
-| `server/.env` | `JWT_ACCESS_SECRET` | Random secret with at least 32 characters |
-| `server/.env` | `FRONTEND_URL` | Exact frontend origin, no trailing slash |
-| `server/.env` | `TRUST_PROXY` | `true` behind Render or another proxy, else `false` |
-| `server/.env` | `NODE_ENV` | `development` locally, `production` on Render |
-| `server/.env` | `PORT` | API port, `4000` by default |
-| `server/.env` | `SEED_OWNER_EMAIL` | Registered email granted OWNER during seeding |
-| `server/.env` | `AUTH_LOGIN_WINDOW_MS`, `AUTH_LOGIN_LIMIT` | Login rate-limit window and failed-attempt limit |
-| `server/.env` | `AUTH_REGISTER_WINDOW_MS`, `AUTH_REGISTER_LIMIT` | Registration rate-limit window and limit |
-| `server/.env` | `API_GENERAL_WINDOW_MS`, `API_GENERAL_LIMIT` | General API rate limit |
-| `server/.env` | `API_CHECKOUT_WINDOW_MS`, `API_CHECKOUT_LIMIT` | Checkout rate limit |
-| `server/.env` | `API_ADMIN_WINDOW_MS`, `API_ADMIN_LIMIT` | Admin analytics rate limit |
-| `client/.env.local` | `NEXT_PUBLIC_API_URL` | Public API origin used at build time |
-| `client/.env.local` | `API_INTERNAL_URL` | Optional rewrite override, takes precedence |
+| File                | Name                                             | Description                                         |
+| ------------------- | ------------------------------------------------ | --------------------------------------------------- |
+| `server/.env`       | `DATABASE_URL`                                   | Pooled PostgreSQL URL used by the app               |
+| `server/.env`       | `DIRECT_URL`                                     | Direct PostgreSQL URL used by migrations            |
+| `server/.env`       | `JWT_ACCESS_SECRET`                              | Random secret with at least 32 characters           |
+| `server/.env`       | `FRONTEND_URL`                                   | Exact frontend origin, no trailing slash            |
+| `server/.env`       | `TRUST_PROXY`                                    | `true` behind Render or another proxy, else `false` |
+| `server/.env`       | `NODE_ENV`                                       | `development` locally, `production` on Render       |
+| `server/.env`       | `PORT`                                           | API port, `4000` by default                         |
+| `server/.env`       | `SEED_OWNER_EMAIL`                               | Registered email granted OWNER during seeding       |
+| `server/.env`       | `AUTH_LOGIN_WINDOW_MS`, `AUTH_LOGIN_LIMIT`       | Login rate-limit window and failed-attempt limit    |
+| `server/.env`       | `AUTH_REGISTER_WINDOW_MS`, `AUTH_REGISTER_LIMIT` | Registration rate-limit window and limit            |
+| `server/.env`       | `API_GENERAL_WINDOW_MS`, `API_GENERAL_LIMIT`     | General API rate limit                              |
+| `server/.env`       | `API_CHECKOUT_WINDOW_MS`, `API_CHECKOUT_LIMIT`   | Checkout rate limit                                 |
+| `server/.env`       | `API_ADMIN_WINDOW_MS`, `API_ADMIN_LIMIT`         | Admin analytics rate limit                          |
+| `client/.env.local` | `NEXT_PUBLIC_API_URL`                            | Public API origin used at build time                |
+| `client/.env.local` | `API_INTERNAL_URL`                               | Optional rewrite override, takes precedence         |
 
 Never commit real values. Production secrets belong only in the hosting secret managers.
 
@@ -182,19 +182,19 @@ BOOTSTRAP_OWNER_EMAIL=owner@example.com npm run owner:bootstrap:prod
 
 ### Scripts
 
-| Location | Command | Purpose |
-| --- | --- | --- |
-| `client/` | `npm run dev` | Start Next.js development server |
-| `client/` | `npm run build` | Production build with webpack |
-| `client/` | `npm run typecheck` | TypeScript check |
-| `client/` | `npm run lint` | ESLint |
-| `server/` | `npm run dev` | Start API in watch mode |
-| `server/` | `npm run build` | Compile TypeScript |
-| `server/` | `npm run typecheck` | TypeScript check |
-| `server/` | `npm run lint` | ESLint |
-| `server/` | `npm test` | Backend tests, integration suite needs `TEST_DATABASE_URL` |
-| `server/` | `npm run db:seed` | Seed restaurant, categories, and menu |
-| `server/` | `npm run owner:bootstrap` | One-time owner grant |
+| Location  | Command                   | Purpose                                                    |
+| --------- | ------------------------- | ---------------------------------------------------------- |
+| `client/` | `npm run dev`             | Start Next.js development server                           |
+| `client/` | `npm run build`           | Production build with webpack                              |
+| `client/` | `npm run typecheck`       | TypeScript check                                           |
+| `client/` | `npm run lint`            | ESLint                                                     |
+| `server/` | `npm run dev`             | Start API in watch mode                                    |
+| `server/` | `npm run build`           | Compile TypeScript                                         |
+| `server/` | `npm run typecheck`       | TypeScript check                                           |
+| `server/` | `npm run lint`            | ESLint                                                     |
+| `server/` | `npm test`                | Backend tests, integration suite needs `TEST_DATABASE_URL` |
+| `server/` | `npm run db:seed`         | Seed restaurant, categories, and menu                      |
+| `server/` | `npm run owner:bootstrap` | One-time owner grant                                       |
 
 ## Deployment
 
@@ -230,11 +230,18 @@ The backend integration suite rebuilds the disposable `foodflow_m4_test` databas
 
 ## Screenshots
 
-- [Placeholder: landing page with 3D hero]
-- [Placeholder: menu with category filters]
-- [Placeholder: cart and checkout]
-- [Placeholder: kitchen live board]
-- [Placeholder: admin overview and rush-hour chart]
+- 3D Hero Section
+  [text](../../../../..)
+  [text](../../../../..)
+  [text](../../../../..)
+  -Menu
+  [text](../../../../..)
+  -Chekout
+  [text](../../../../..)
+  -Kitchen
+  [text](../../../../..)
+  -Admin
+  [text](../../../../..)
 
 ## Roadmap and known limitations
 
@@ -244,11 +251,3 @@ The backend integration suite rebuilds the disposable `foodflow_m4_test` databas
 - JWT has no persistent refresh-token revocation; changing a password keeps the current session and does not revoke other tokens server-side.
 - Single-server Socket.IO rooms; horizontal scaling needs a shared adapter and rate-limit store.
 - Menu photos include stock and generated media; replace with approved restaurant photography and confirm prices before taking real orders.
-
-## Contributing
-
-Keep changes focused and reviewable, follow TypeScript strict mode, validate with Zod, enforce authorization server-side, and update tests for auth, pricing, ownership, and status transitions.
-
-## License
-
-TODO: no license file exists in this repository yet. Add one before public release.
