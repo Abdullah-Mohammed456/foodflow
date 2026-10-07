@@ -3,4 +3,19 @@ node_modules/
 out/
 .env
 .env.local
+!.env.example
 *.log
+coverage/
+.DS_Store
+.vercel/
+
+# Keep only the root README in git; ignore local agent and working docs
+*.md
+AGENTS.md
+CLAUDE.md
+docs/
+output/
+.opencode/
+.claude/
+.codex/
+.cursor/

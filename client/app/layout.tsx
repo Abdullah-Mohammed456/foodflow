@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { FloatingBag } from "@/components/floating-bag";
 import { CustomerBoundary } from "@/components/customer-boundary";
+import { SelectionGuard } from "@/components/selection-guard";
 import { ButtonMotion } from "@/components/button-motion";
 import { PageMotion } from "@/components/page-motion";
 
@@ -78,7 +79,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             }),
           }}
         />
-        <Providers><SiteHeader /><CustomerBoundary>{children}</CustomerBoundary><SiteFooter /><FloatingBag /><PageMotion /><ButtonMotion /></Providers>
+        <Providers><SiteHeader /><CustomerBoundary>{children}</CustomerBoundary><SiteFooter /><FloatingBag /><PageMotion /><ButtonMotion /><SelectionGuard /></Providers>
       </body>
     </html>
   );

@@ -6,6 +6,7 @@ import { FoodImage as Image } from "@/components/food-image";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { io } from "socket.io-client";
+import { AppLoaderGate } from "@/components/app-loader";
 import {
   confirmAction,
   errorMessage,
@@ -98,6 +99,7 @@ export function AuthPage({
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [working, setWorking] = useState(false);
   const onSubmit = async (event: FormEvent) => {
@@ -181,7 +183,7 @@ export function AuthPage({
           <label>
             Password
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               minLength={mode === "register" ? 12 : 1}
               autoComplete={
@@ -191,6 +193,13 @@ export function AuthPage({
               onChange={(event) => setPassword(event.target.value)}
             />
           </label>
+          <button
+            className="text-button"
+            type="button"
+            onClick={() => setShowPassword((value) => !value)}
+          >
+            {showPassword ? "Hide password" : "Show password"}
+          </button>
           <ErrorText error={error} />
           <button className="action" type="submit" disabled={working}>
             {working
@@ -226,9 +235,11 @@ export function AccountPage() {
   const { data: user, isPending, isError, refetch } = useUser();
   if (isPending)
     return (
-      <main className="interior wrap">
-        <p role="status">Loading your account…</p>
-      </main>
+      <AppLoaderGate done={false} failed={false} onRetry={() => refetch()}>
+        <main className="interior wrap">
+          <p role="status">Loading your account…</p>
+        </main>
+      </AppLoaderGate>
     );
   if (isError || !user)
     return (
@@ -325,6 +336,7 @@ function AccountForm({
             </button>
           </form>
         </section>
+        <ChangePasswordForm />
         <section className="panel account-links">
           <h2>Good things ahead.</h2>
           {!access.isStaff && (
@@ -343,6 +355,131 @@ function AccountForm({
         </section>
       </div>
     </main>
+  );
+}
+
+function ChangePasswordForm() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const [message, setMessage] = useState("");
+  const [working, setWorking] = useState(false);
+  const newError =
+    newPassword && newPassword.length < 12
+      ? "New password must be at least 12 characters."
+      : newPassword && currentPassword && newPassword === currentPassword
+        ? "New password must be different from the current password."
+        : "";
+  const confirmError =
+    confirmPassword && confirmPassword !== newPassword
+      ? "Passwords do not match."
+      : "";
+  const valid =
+    currentPassword.length > 0 &&
+    newPassword.length >= 12 &&
+    !newError &&
+    !confirmError &&
+    confirmPassword === newPassword;
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!valid || working) return;
+    setError(null);
+    setMessage("");
+    setWorking(true);
+    try {
+      await apiFetch("/api/auth/me/password", {
+        method: "PATCH",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setMessage("Password changed. Use your new password next time you sign in.");
+      void successToast("PASSWORD CHANGED.");
+    } catch (caught) {
+      setError(caught);
+      void errorMessage(caught);
+    } finally {
+      setWorking(false);
+    }
+  };
+  return (
+    <section className="panel" aria-labelledby="change-password-title">
+      <h2 id="change-password-title">Change password</h2>
+      <form onSubmit={submit}>
+        <label>
+          Current password
+          <input
+            type={showCurrent ? "text" : "password"}
+            required
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(event) => setCurrentPassword(event.target.value)}
+          />
+        </label>
+        <button
+          className="text-button"
+          type="button"
+          onClick={() => setShowCurrent((value) => !value)}
+        >
+          {showCurrent ? "Hide current password" : "Show current password"}
+        </button>
+        <label>
+          New password
+          <input
+            type={showNew ? "text" : "password"}
+            required
+            minLength={12}
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+          />
+        </label>
+        <button
+          className="text-button"
+          type="button"
+          onClick={() => setShowNew((value) => !value)}
+        >
+          {showNew ? "Hide new password" : "Show new password"}
+        </button>
+        {newError && (
+          <p className="form-error" role="alert">
+            {newError}
+          </p>
+        )}
+        <label>
+          Confirm new password
+          <input
+            type={showConfirm ? "text" : "password"}
+            required
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+          />
+        </label>
+        <button
+          className="text-button"
+          type="button"
+          onClick={() => setShowConfirm((value) => !value)}
+        >
+          {showConfirm ? "Hide confirmation" : "Show confirmation"}
+        </button>
+        {confirmError && (
+          <p className="form-error" role="alert">
+            {confirmError}
+          </p>
+        )}
+        <ErrorText error={error} />
+        {message && <p role="status">{message}</p>}
+        <button className="action" type="submit" disabled={!valid || working}>
+          {working ? "UPDATING PASSWORD…" : "UPDATE PASSWORD →"}
+        </button>
+      </form>
+    </section>
   );
 }
 

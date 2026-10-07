@@ -1,191 +1,254 @@
 # FoodFlow
 
-Fast-food ordering platform for a single-brand restaurant in Egypt — pizza, burgers, sandwiches, fries & sides, chicken, drinks, desserts, and combo deals. Customers order dine-in, takeaway, or delivery with live status; kitchen runs a prep-urgency queue; managers run catalog, staff, and rush-hour analytics.
+Fast-food ordering platform for a single-brand restaurant in Egypt: pizza, burgers, sandwiches, fries and sides, chicken, drinks, desserts, and combo deals.
 
-Live: https://foodflow-eg.vercel.app
+| Tech | Deployment |
+| --- | --- |
+| Next.js App Router, TypeScript, Tailwind v4, TanStack Query | Client on Vercel |
+| Express, TypeScript, Prisma 7, Zod, Socket.IO | Server on Render |
+| PostgreSQL | Database on Neon |
 
-See [Production checklist](PRODUCTION-CHECKLIST.md) for deployment after edits,
-the exact photography list, owner setup, completed checks and remaining release tests.
+Live demo: https://foodflow-eg.vercel.app
 
-## What is inside
+## Overview
 
-Customer: landing page, public menu with 8 categories, search and size selection, cart, checkout with order-type selector, order confirmation, order history, live order tracking, account registration and profile.
+FOODFLOW is a full multi-role platform with three sides, not just a customer login:
 
-Kitchen: prep-deadline queue for active orders, status transitions PENDING to CONFIRMED to PREPARING to READY to COMPLETED, Socket.IO live updates with HTTP refetch fallback.
+- Customer experience: landing page with 3D hero, horizontal category showcase, menu with search and category filters, size selection, cart, checkout with order-type selector, order confirmation, order history, live order tracking, account profile, and change password.
+- Kitchen display: live order queue in PENDING, CONFIRMED, PREPARING, and READY columns, sorted by preparation deadline, with one-step status advance and live Socket.IO updates plus HTTP polling fallback.
+- Manager and admin dashboard: revenue and order analytics, popular items, rush-hour breakdown, menu and category management, availability toggles, staff list and role management, and restaurant open and closed settings.
 
-Manager: revenue and order analytics, popular items, rush-hour breakdown, menu and category CRUD, availability toggles, staff list and role management, restaurant open and closed settings.
+The manager and kitchen sides are full workspaces behind role checks. A normal visitor only sees the customer side.
 
-Platform: Next.js App Router with TypeScript strict and Tailwind v4 on Vercel; Express with TypeScript, Prisma 7, Zod, and Socket.IO on the API host; PostgreSQL on Neon. Prices, permissions, totals, and order state are server authoritative. Auth uses HttpOnly cookies. Combo prices are server-defined bundles.
+## Features
 
-## Repository layout
+### Customer
+
+- Landing page with 3D hero, category ribbon, horizontal category showcase, menu preview, combo banner, and ordering steps.
+- Menu page with search, eight category filters, size variants, spice and combo badges, prep-time labels, and paginated results.
+- Cart with size changes, quantity controls, saved cart, floating bag, and bag drawer.
+- Checkout with DINE_IN, TAKEAWAY, and DELIVERY types, delivery-address validation, kitchen notes, price recheck, checkout-key idempotency, and cash on receipt payment notice.
+- Order confirmation page, order history list, and order detail page with status progress steps and estimated preparation time.
+- Account page with profile edit, change password form with show and hide toggles, staff shortcuts, and sign out.
+- Dark and light mode toggle persisted in local storage.
+
+### Kitchen
+
+- Live board with ON THE LINE, PREPARING, and READY counters and manual refresh.
+- Four status columns: PENDING, CONFIRMED, PREPARING, READY.
+- Each ticket shows order number, order type, placed time, minutes left or late state, items with sizes and combo flags, delivery address, and kitchen notes.
+- One-click advance: PENDING to CONFIRMED to PREPARING to READY to COMPLETED.
+- Socket.IO live refresh on order events with 30-second HTTP refetch fallback.
+- Access requires OWNER, MANAGER, or KITCHEN restaurant membership.
+
+### Manager and admin
+
+- Overview tab: total orders, revenue, active queue, average order value, average fulfillment minutes, revenue per day bars, most-wanted items, and rush-hour chart with peak UTC hour.
+- Orders tab: active orders sorted by preparation deadline with status pills and totals, plus a link to the kitchen board.
+- Menu tab: category create, rename, hide and show, and delete; menu-item create and edit with name, category, description, image URL, sizes and prices, prep time, combo and spicy flags, and availability toggles.
+- Staff tab: list members, add by registered email with OWNER, MANAGER, or KITCHEN role, change roles, and remove members. The last OWNER cannot be demoted or removed.
+- Settings tab: restaurant name, description, logo URL, and open-for-orders toggle.
+
+### Platform
+
+- Dark and light mode with theme tokens across pages, modals, drawers, toasts, empty states, forms, tables, badges, and charts.
+- Branded 3D burger loading screen while the session or server wakes up, with progress estimate, status messages, retry on timeout, and reduced-motion support.
+- Real-time order updates over Socket.IO with authenticated handshake, room subscriptions, and HTTP reconciliation.
+- Cookie auth with role-based access on client and server.
+- Responsive layouts for mobile, tablet, and desktop, keyboard navigation, visible focus states, and reduced-motion fallbacks.
+
+## Roles and permissions
+
+| Route | Customer | KITCHEN | MANAGER | OWNER |
+| --- | --- | --- | --- | --- |
+| `/`, `/menu`, `/cart` | Yes | Staff workspace notice | Staff workspace notice | Staff workspace notice |
+| `/checkout`, `/orders`, `/orders/:publicId` | Own orders only | Staff workspace notice | Staff workspace notice | Staff workspace notice |
+| `/account` | Yes | Yes | Yes | Yes |
+| `/kitchen` | Denied | Yes | Yes | Yes |
+| `/admin` | Denied | Denied | Yes | Yes |
+
+Server rules: prices, permissions, totals, and order state are server authoritative. A public signup creates a customer, never staff. The global ADMIN role alone grants nothing without restaurant membership. Customers can only cancel their own PENDING orders and can only read their own orders.
+
+## Tech stack
+
+| Area | Technology |
+| --- | --- |
+| Client | Next.js App Router, TypeScript strict, Tailwind v4, TanStack Query, Socket.IO client, GSAP, Three.js, SweetAlert2, Zod |
+| Server | Express, TypeScript, Prisma 7, Zod, Socket.IO, scrypt password hashing, JWT in HttpOnly cookies, Helmet, express-rate-limit |
+| Database | PostgreSQL on Neon, Prisma migrations, Decimal money fields, idempotency and financial constraints |
+| Auth | HttpOnly `foodflow_access` cookie, JWT access tokens, restaurant membership roles |
+| Real-time | Socket.IO on `/api/socket.io`, cookie auth, `user:{id}` and `restaurant:{id}:kitchen` rooms, events `order.created`, `order.confirmed`, `order.preparing`, `order.ready`, `order.completed`, `order.cancelled` |
+| Animation and 3D | GSAP ScrollTrigger and timelines, Three.js restaurant hero and category gates, CSS loading bar |
+| Hosting | Vercel for `client/`, Render for `server/` with `/health/ready` checks, Neon for PostgreSQL |
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser --> Vercel[Vercel: Next.js client]
+  Vercel -->|same-origin /api and /health rewrites| Render[Render: Express API]
+  Render --> Neon[(Neon PostgreSQL)]
+  Render -.->|Socket.IO order events| Browser
+  Browser -.->|HTTP refetch on event or interval| Render
+```
+
+The browser only talks to the Vercel origin. Next.js rewrites proxy `/api/*`, `/api/socket.io`, and `/health/*` to the Render backend, so auth cookies stay first-party. Checkout, pricing, ownership, and status transitions run in server transactions. Socket.IO emits after a successful commit; clients refetch the authoritative state over HTTP. Preparation deadline equals order creation plus the longest item prep time.
+
+## Project structure
 
 ```text
 foodflow/
-  client/                   # Next.js (App Router, TS strict, Tailwind v4, TanStack Query)
-  server/                   # Express + TypeScript + Prisma 7 + Zod + PostgreSQL
-  markdown-files/           # product and milestone specs (M1-M7)
+  client/                 Next.js App Router frontend
+    app/                  routes: page, menu, cart, checkout, orders, account, kitchen, admin, login, register
+    components/           site header and footer, menu explorer, commerce flows, operations boards, loaders
+    lib/                  API client, queries, food helpers, checkout helpers, alerts
+    public/               local menu and editorial imagery, manifest assets
+  server/                 Express API backend
+    src/modules/auth/     register, login, profile, password change, access checks
+    src/modules/catalog/  public menu, categories, menu items and variants
+    src/modules/orders/   customer checkout, history, detail, cancellation
+    src/modules/kitchen/  staff queue and status transitions
+    src/modules/admin/    overview, revenue, popular items, rush hours, staff
+    src/modules/realtime/ Socket.IO auth, rooms, and order events
+    prisma/               PostgreSQL schema and migrations
+  render.yaml             Render service with /health/ready checks
+  Dockerfile              production server build with migrations on start
+  docker-compose.yml      local PostgreSQL, API, and web app
 ```
 
-`client/` and `server/` implement the M1 `frontend/` and `backend/` split. Product specs live in `markdown-files/` (`MASTER-PLAN.md`, `MILESTONES.md`, `IMPLEMENTATION-M*.md`). Any agent working in this repo must treat it as fast food, not generic restaurant food.
+## Getting started
 
-## Production deployment
+### Prerequisites
 
-Frontend: `client/` on Vercel, project root `client/`. Set `NEXT_PUBLIC_API_URL` to the API origin (for example `https://YOUR-BACK4APP-APP-URL`). Browser traffic uses same-origin `/api/*` and `/health/*` rewrites, so auth cookies stay first-party.
+- Node.js 20 or later
+- Docker and Docker Compose for the local stack
+- A Neon PostgreSQL database for hosted use
 
-Backend: `server/` on a persistent container host. Back4app's free URL expires after 60 minutes; use a paid permanent container or another persistent host. On Back4app Containers from the repo root `Dockerfile`, exposed port 4000. See [Back4app deployment](DEPLOY-BACK4APP.md). Set `DATABASE_URL` (Neon pooled), `DIRECT_URL` (Neon direct), `JWT_ACCESS_SECRET` (32+ random characters), `FRONTEND_URL` (exact Vercel origin, no trailing slash), `NODE_ENV=production`, `TRUST_PROXY=true`, `PORT=4000`.
-
-Database: Neon PostgreSQL. Run migrations on the API host at startup (`prisma migrate deploy`), then seed once:
-
-```sh
-npm run db:seed:prod
-```
-
-with `SEED_OWNER_EMAIL` set to the registered owner account. The seed creates the restaurant, the 8 canonical categories, the menu, and grants that account `OWNER`.
-
-Current status, October 2026: the frontend is hosted on Vercel, but the Back4app container is returning 404 on `/health` and `/health/ready`. Until the container is restarted with the variables above, the production menu, checkout, kitchen, and admin screens cannot reach the API. After redeploying the commits in this branch, restart the Back4app app, open `https://YOUR-BACK4APP-APP-URL/health/ready`, and expect `{"success":true}`.
-
-## Quickstart with Docker
-
-From the repository root, start PostgreSQL, the API, and the web app together:
+### Install
 
 ```sh
 npm run dev
 ```
 
-Open <http://localhost:3000>. The API is available at <http://localhost:4000>;
-`/health` checks that it is running and `/health/ready` also checks PostgreSQL.
-Compose starts the API without changing the database schema. On first setup,
-apply migrations and seed the catalog explicitly:
+This starts PostgreSQL, the API, and the web app together. Open http://localhost:3000. The API is available at http://localhost:4000.
+
+For standalone development, copy the examples first:
+
+```sh
+cp server/.env.example server/.env
+cp client/.env.example client/.env.local
+```
+
+### Environment variables
+
+| File | Name | Description |
+| --- | --- | --- |
+| `server/.env` | `DATABASE_URL` | Pooled PostgreSQL URL used by the app |
+| `server/.env` | `DIRECT_URL` | Direct PostgreSQL URL used by migrations |
+| `server/.env` | `JWT_ACCESS_SECRET` | Random secret with at least 32 characters |
+| `server/.env` | `FRONTEND_URL` | Exact frontend origin, no trailing slash |
+| `server/.env` | `TRUST_PROXY` | `true` behind Render or another proxy, else `false` |
+| `server/.env` | `NODE_ENV` | `development` locally, `production` on Render |
+| `server/.env` | `PORT` | API port, `4000` by default |
+| `server/.env` | `SEED_OWNER_EMAIL` | Registered email granted OWNER during seeding |
+| `server/.env` | `AUTH_LOGIN_WINDOW_MS`, `AUTH_LOGIN_LIMIT` | Login rate-limit window and failed-attempt limit |
+| `server/.env` | `AUTH_REGISTER_WINDOW_MS`, `AUTH_REGISTER_LIMIT` | Registration rate-limit window and limit |
+| `server/.env` | `API_GENERAL_WINDOW_MS`, `API_GENERAL_LIMIT` | General API rate limit |
+| `server/.env` | `API_CHECKOUT_WINDOW_MS`, `API_CHECKOUT_LIMIT` | Checkout rate limit |
+| `server/.env` | `API_ADMIN_WINDOW_MS`, `API_ADMIN_LIMIT` | Admin analytics rate limit |
+| `client/.env.local` | `NEXT_PUBLIC_API_URL` | Public API origin used at build time |
+| `client/.env.local` | `API_INTERNAL_URL` | Optional rewrite override, takes precedence |
+
+Never commit real values. Production secrets belong only in the hosting secret managers.
+
+### Database setup
 
 ```sh
 docker compose run --rm server npx prisma migrate deploy
 docker compose run --rm server npm run db:seed
 ```
 
-To grant the seeded restaurant's `OWNER` role to an existing account, set
-`SEED_OWNER_EMAIL` in `server/.env` to that account's registered email before
-running the seed command. The seed creates the public restaurant and its menu
-even when no owner email is configured.
-
-Stop the services with `Ctrl+C`, or run `npm run dev:down` in another terminal.
-The PostgreSQL data remains in a Docker volume between runs.
-
-For standalone local development, copy `server/.env.example` to `server/.env`
-and `client/.env.example` to `client/.env.local`. Never put production Neon
-credentials or the production JWT secret into `server/.env`; those belong only
-in the hosting platforms' secret managers.
-
-## Admin account
-
-A public signup intentionally creates a customer, never an administrator.
-For a new owner, run the one-time bootstrap from `server/` with privileged
-production database access after seeding the restaurant:
+To grant OWNER to an existing account, set `SEED_OWNER_EMAIL` to that registered email before seeding. For a new owner without seeding, use the one-time bootstrap from `server/`:
 
 ```sh
-BOOTSTRAP_OWNER_EMAIL=your-owner@example.com npm run owner:bootstrap:prod
+BOOTSTRAP_OWNER_EMAIL=owner@example.com npm run owner:bootstrap:prod
 ```
 
-The command creates a missing account and grants its FoodFlow membership `OWNER`.
-A random password is saved only in `.owner-credentials.json`, with private file
-permissions; the file is ignored by Git. Read it privately and store it in your
-password manager. An existing account keeps its existing password. An existing
-credentials file is never overwritten. `BOOTSTRAP_CREDENTIALS_FILE` can select a
-private output path on a host with a persistent filesystem. No password is
-printed in hosting logs. This command does not run automatically on startup.
+### Run locally
 
+- Full stack: `npm run dev` from the repo root, stop with `Ctrl+C` or `npm run dev:down`.
+- Client only: `npm run dev` from `client/` on port 3000.
+- Server only: `npm run dev` from `server/` on port 4000.
 
-Register the owner account through the deployed frontend (`/register`), then set `SEED_OWNER_EMAIL` to that email and run `npm run db:seed:prod` once against the production database. Sign in again: `/admin` manages catalog, analytics, staff, and settings; `/kitchen` accepts and advances orders. The last `OWNER` cannot be demoted or removed. Rotate `JWT_ACCESS_SECRET` if it was ever copied outside the secret manager.
+### Scripts
 
-## Checks
+| Location | Command | Purpose |
+| --- | --- | --- |
+| `client/` | `npm run dev` | Start Next.js development server |
+| `client/` | `npm run build` | Production build with webpack |
+| `client/` | `npm run typecheck` | TypeScript check |
+| `client/` | `npm run lint` | ESLint |
+| `server/` | `npm run dev` | Start API in watch mode |
+| `server/` | `npm run build` | Compile TypeScript |
+| `server/` | `npm run typecheck` | TypeScript check |
+| `server/` | `npm run lint` | ESLint |
+| `server/` | `npm test` | Backend tests, integration suite needs `TEST_DATABASE_URL` |
+| `server/` | `npm run db:seed` | Seed restaurant, categories, and menu |
+| `server/` | `npm run owner:bootstrap` | One-time owner grant |
 
-| Check     | Backend                                                     | Frontend                         |
-| --------- | ----------------------------------------------------------- | -------------------------------- |
-| Starts    | `npm run dev` (:4000)                                       | `npm run dev` (:3000)            |
-| Health    | `GET /health` (live), `GET /health/ready` (live + DB)       | `/` has a connection disclosure |
-| Typecheck | `npm run typecheck`                                         | `npm run typecheck`              |
-| Lint      | `npm run lint`                                              | `npm run lint`                   |
-| DB        | `npx prisma validate` passes / live DB needs `DATABASE_URL` | —                                |
+## Deployment
 
-With the isolated local database `foodflow_m4_test`, run the backend integration
-suite using `TEST_DATABASE_URL`. These tests rebuild its `public` schema and
-must never point to a database containing valuable data. The client production
-build uses `npm run build` with webpack on hosts where Turbopack workers cannot
-bind a local port.
+- Vercel client: project root `client/`, build command `npm run build`. Set `NEXT_PUBLIC_API_URL` to the Render origin, then redeploy after changing it.
+- Render server: builds from the repo root `Dockerfile`, exposes port 4000, runs `prisma migrate deploy` on start, and uses `/health/ready` checks. Set `DATABASE_URL`, `DIRECT_URL`, `JWT_ACCESS_SECRET`, `FRONTEND_URL`, `NODE_ENV=production`, and `TRUST_PROXY=true`.
+- Neon database: pooled URL for `DATABASE_URL`, direct URL for `DIRECT_URL`. Run migrations on the API host at startup, then seed once.
+- CORS and cookies: only `FRONTEND_URL` is accepted, with credentials. Browser traffic uses same-origin rewrites, so the HttpOnly cookie stays `Secure`, `SameSite=Lax`, and scoped to `/api`.
+- Cold start note: the free Render tier can sleep. The app shows the branded burger loading screen while the server wakes up, with retry if it takes too long.
+
+## API overview
+
+- Health: `GET /health`, `GET /health/ready`.
+- Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`, `PATCH /api/auth/me`, `PATCH /api/auth/me/password`, `GET /api/auth/access?restaurantId=`.
+- Public catalog: `GET /api/restaurants/public/:slug`, `GET /api/restaurants/public/:slug/menu?category&q&page&limit`.
+- Customer orders: `POST /api/orders`, `GET /api/orders?page&limit&status`, `GET /api/orders/:publicId`, `POST /api/orders/:publicId/cancel`.
+- Kitchen: `GET /api/restaurants/:id/kitchen/orders`, `PATCH /api/restaurants/:id/kitchen/orders/:publicId/status`.
+- Catalog management: category and menu-item CRUD plus availability endpoints.
+- Admin: `GET /api/restaurants/:id/admin/overview`, `/revenue`, `/popular-items`, `/rush`, staff list, add, role change, and removal.
+- Realtime: Socket.IO at `/api/socket.io` with `kitchen.subscribe` and `kitchen.unsubscribe` acknowledgements.
+
+Responses use `{ success: true, data }` and `{ success: false, error: { code, message, details } }`.
+
+## Testing and linting
 
 ```sh
+npm run typecheck
+npm run lint
+npm run build
 TEST_DATABASE_URL=postgresql://USER@127.0.0.1:PORT/foodflow_m4_test npm test
 ```
 
-Production smoke test, after the API host is healthy: register, login, browse the fast-food menu, place a takeaway combo order, confirm the kitchen receives it, advance it to READY, confirm the customer sees the update, logout, and confirm unauthorized admin access is denied. The backend-only script covers health, register, login, public menu, admin denial, origin denial, and security headers:
+The backend integration suite rebuilds the disposable `foodflow_m4_test` database schema and must never point at production data.
 
-```sh
-./server/scripts/smoke.sh https://YOUR-BACK4APP-APP-URL
-```
+## Screenshots
 
-## Images and photography
+- [Placeholder: landing page with 3D hero]
+- [Placeholder: menu with category filters]
+- [Placeholder: cart and checkout]
+- [Placeholder: kitchen live board]
+- [Placeholder: admin overview and rush-hour chart]
 
-The landing photography uses local copies in `client/public/food/`, including the category tiles, menu item photos, the combo banner, and the 120-frame scroll-driven burger film in `client/public/food/burger-sequence/`. The site icon is `client/app/icon.svg` and social sharing uses `/food/combo.jpg` through Open Graph and Twitter metadata.
+## Roadmap and known limitations
 
-The menu photos are real stock photographs, not photographs of FoodFlow's actual dishes. Replace them with approved product photography before taking real orders. The burger film is generated media with subtle movement, so replace it with a real shoot of the restaurant's burger before using it as authentic product photography.
+- Cash ordering is implemented; online payment is not.
+- Delivery zones and fee configuration are future work; delivery fee is currently zero.
+- Single restaurant and branch model; no multi-branch marketplace.
+- JWT has no persistent refresh-token revocation; changing a password keeps the current session and does not revoke other tokens server-side.
+- Single-server Socket.IO rooms; horizontal scaling needs a shared adapter and rate-limit store.
+- Menu photos include stock and generated media; replace with approved restaurant photography and confirm prices before taking real orders.
 
-The seed prices are provisional Egyptian market benchmarks, not confirmed FoodFlow selling prices. They were checked against published Egyptian menus in October 2026. Confirm each size, bundle, tax, and delivery charge with the restaurant owner before production. The seed only creates missing items; it does not overwrite the prices of an existing catalog when run again.
+## Contributing
 
-## Search and social
+Keep changes focused and reviewable, follow TypeScript strict mode, validate with Zod, enforce authorization server-side, and update tests for auth, pricing, ownership, and status transitions.
 
-The app ships `sitemap.xml` and `robots.txt` from the App Router, canonical URLs, Open Graph and Twitter cards, a web manifest, and Restaurant JSON-LD pointing at `https://foodflow-eg.vercel.app`. New domains are not indexed automatically: verify the property in Google Search Console, submit `/sitemap.xml`, and wait for the first crawl. Ranking depends on real content, reviews, and links, not on metadata alone.
+## License
 
-## Architecture (M1 proof)
-
-`Route → Controller (thin) → Service → Repository → Prisma → PostgreSQL`,
-demonstrated by `server/src/modules/health/` (`PrismaHealthRepository`
-behind `IHealthRepository`). Shared error envelope:
-`{ success, data }` / `{ success: false, error: { code, message, details? } }`.
-
-## Database setup
-
-Prisma is configured with the Prisma 7 config file and PostgreSQL driver
-adapter. Keep `DATABASE_URL` for application queries and `DIRECT_URL` for
-migrations. `server/.env` overrides the local Docker defaults, so verify which
-database those URLs target before applying migrations.
-
-## Updating the live app
-
-Push reviewed changes to the Git branch connected to the hosts. Vercel normally
-builds a new frontend deployment automatically. Check the deployment's commit
-and build result. Back4app must also rebuild when backend or Docker files change;
-if automatic Git deployment is disabled, redeploy it from its dashboard.
-Database changes require `prisma migrate deploy`; adding photos or changing
-frontend animation does not require migrations. Changing frontend build-time
-variables requires a new Vercel build. Changing backend variables requires
-restarting/redeploying the container.
-
-## Before accepting real orders
-
-- Confirm `/health/ready`, all eight menu categories, and final restaurant prices.
-- Verify signup, login, refresh, logout, and an expired-session recovery in a real browser.
-- Submit dine-in, takeaway and delivery orders; test required delivery address,
-  unavailable products, a closed restaurant, and repeated checkout submission.
-- With a separate owner session, accept the order in `/kitchen`, advance each
-  permitted status, and verify the customer receives updates without a reload.
-- Test `/admin` with owner and customer sessions, catalog edits, availability,
-  staff roles, analytics, and retention of the last owner.
-- Check mobile cart/checkout, keyboard focus, reduced motion, image loading,
-  horizontal section entry/exit, and browser console/network failures.
-- Configure real operating hours, delivery coverage, contact details, privacy and
-  cancellation policies, database backups and restore drills, error monitoring,
-  and uptime alerts. Cash ordering is implemented; online payment is not.
-- Replace provisional prices and stock product imagery with approved restaurant
-  information before presenting it as the restaurant's actual menu.
-
-Use Playwright for repeatable browser journeys and an AI browser agent to explore
-unexpected navigation, mobile behavior and error states. AI testing supplements
-these checks; it cannot certify that a site has no bugs. Run tests on a staging
-branch and a separate database, then perform a controlled production smoke test.
-
-## Photo sources
-
-New landing-page photographs and their source pages are recorded in
-[PHOTO-CREDITS.md](PHOTO-CREDITS.md). They are downloaded locally so the page does
-not depend on an external image host at runtime. The new icon is a two-colour FF
-monogram in `client/app/icon.svg`. Existing user-supplied assets retain their
-original provenance; confirm their usage rights before launch.
+TODO: no license file exists in this repository yet. Add one before public release.

@@ -20,7 +20,9 @@ export interface IAuthRepository {
   create(input: { email: string; name: string; passwordHash: string }): Promise<void>;
   findByEmail(email: string): Promise<AuthUser | null>;
   findById(id: string): Promise<AuthProfile | null>;
+  findWithHashById(id: string): Promise<AuthUser | null>;
   updateProfile(id: string, input: ProfileUpdateInput): Promise<AuthProfile>;
+  updatePasswordHash(id: string, passwordHash: string): Promise<void>;
   findRestaurantRole(
     userId: string,
     restaurantId: string,
@@ -82,6 +84,19 @@ export class PrismaAuthRepository implements IAuthRepository {
     });
   }
 
+  findWithHashById(id: string): Promise<AuthUser | null> {
+    return this.db.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        passwordHash: true,
+        role: true,
+      },
+    });
+  }
+
   async updateProfile(
     id: string,
     input: ProfileUpdateInput,
@@ -96,6 +111,20 @@ export class PrismaAuthRepository implements IAuthRepository {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === "P2002") throw new DuplicateEmailError();
         if (error.code === "P2025") throw new UserNotFoundError();
+      }
+      throw error;
+    }
+  }
+
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    try {
+      await this.db.user.update({ where: { id }, data: { passwordHash } });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
+      ) {
+        throw new UserNotFoundError();
       }
       throw error;
     }

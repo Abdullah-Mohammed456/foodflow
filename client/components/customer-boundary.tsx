@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useStaffAccess } from "@/lib/queries";
+import { AppLoaderGate } from "@/components/app-loader";
 
 export function CustomerBoundary({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -14,28 +15,17 @@ export function CustomerBoundary({ children }: { children: ReactNode }) {
       (path) => pathname === path || pathname.startsWith(`${path}/`),
     );
   if (!customerPage) return children;
-  if (access.isChecking)
+  if (access.isChecking || access.error)
     return (
-      <main className="interior wrap">
-        <p role="status">Checking your session…</p>
-      </main>
-    );
-  if (access.error)
-    return (
-      <main className="interior wrap">
-        <h1>LET’S RECONNECT.</h1>
-        <p>We could not check your account permissions.</p>
-        <button
-          className="action"
-          type="button"
-          onClick={() => access.refetch()}
-        >
-          TRY AGAIN
-        </button>
-        <Link className="text-button" href="/account">
-          YOUR ACCOUNT
-        </Link>
-      </main>
+      <AppLoaderGate
+        done={!access.isChecking && !access.error}
+        failed={!!access.error}
+        onRetry={() => access.refetch()}
+      >
+        <main className="interior wrap">
+          <p role="status">Checking your session…</p>
+        </main>
+      </AppLoaderGate>
     );
   if (access.isStaff)
     return (

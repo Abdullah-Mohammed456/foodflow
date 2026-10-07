@@ -28,6 +28,18 @@ export const profileUpdateSchema = z
     message: "Provide at least one profile field to update",
   });
 
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1).max(1024),
+    newPassword: z.string().min(12).max(1024),
+  })
+  .strict()
+  .refine((value) => value.newPassword !== value.currentPassword, {
+    message: "New password must be different from the current password",
+    path: ["newPassword"],
+  });
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

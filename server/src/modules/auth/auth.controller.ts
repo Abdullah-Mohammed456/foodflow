@@ -5,6 +5,7 @@ import { createAccessToken } from "./access-token.js";
 import { clearAccessCookie, setAccessCookie } from "./auth-cookie.js";
 import type { AuthService } from "./auth.service.js";
 import {
+  changePasswordSchema,
   loginSchema,
   profileUpdateSchema,
   registerSchema,
@@ -89,6 +90,24 @@ export function createAuthController(service: AuthService) {
     logout: (_req: Request, res: Response) => {
       clearAccessCookie(res);
       res.status(200).json({ success: true, data: { message: "Logged out" } });
+    },
+    changePassword: async (req: Request, res: Response, next: NextFunction) => {
+      const userId = req.auth?.id;
+      if (!userId) {
+        next(new AppError("UNAUTHORIZED", "Authentication required"));
+        return;
+      }
+      const parsed = changePasswordSchema.safeParse(req.body);
+      if (!parsed.success) {
+        next(validationError(parsed.error.flatten()));
+        return;
+      }
+      try {
+        await service.changePassword(userId, parsed.data);
+        res.status(200).json({ success: true, data: { message: "Password updated" } });
+      } catch (error) {
+        next(error);
+      }
     },
   };
 }

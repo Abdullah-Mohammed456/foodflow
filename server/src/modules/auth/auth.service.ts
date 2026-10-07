@@ -7,6 +7,7 @@ import {
   UserNotFoundError,
 } from "./auth.repository.js";
 import type {
+  ChangePasswordInput,
   LoginInput,
   ProfileUpdateInput,
   RegisterInput,
@@ -75,6 +76,20 @@ export class AuthService {
       }
       throw error;
     }
+  }
+
+  async changePassword(id: string, input: ChangePasswordInput): Promise<void> {
+    const current = await this.repo.findWithHashById(id);
+    const valid = current
+      ? await verifyPassword(input.currentPassword, current.passwordHash)
+      : await verifyPassword(
+          input.currentPassword,
+          await DUMMY_PASSWORD_HASH,
+        );
+    if (!current || !valid) {
+      throw new AppError("UNAUTHORIZED", "Current password is incorrect");
+    }
+    await this.repo.updatePasswordHash(id, await hashPassword(input.newPassword));
   }
 
   async restaurantAccess(userId: string, restaurantId: string) {

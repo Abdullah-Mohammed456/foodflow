@@ -11,7 +11,7 @@ export function HealthPanel() {
 
   if (query.isPending) {
     return (
-      <p role="status" className="text-sm text-neutral-500">
+      <p role="status" className="health-status">
         Checking API…
       </p>
     );
@@ -19,7 +19,7 @@ export function HealthPanel() {
 
   if (query.isError) {
     return (
-      <p role="alert" className="text-sm text-red-600">
+      <p role="alert" className="health-error">
         API unreachable:{" "}
         {query.error instanceof Error
           ? query.error.message
@@ -29,7 +29,7 @@ export function HealthPanel() {
   }
 
   return (
-    <p role="status" className="text-sm text-green-700">
+    <p role="status" className="health-ok">
       API connected (uptime {query.data.uptimeSeconds}s,{" "}
       {query.data.timestamp})
     </p>

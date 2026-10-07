@@ -30,6 +30,7 @@ function createLimiter(options: LimitOptions) {
 export function createAuthRateLimiters(options?: {
   login?: LimitOptions;
   register?: LimitOptions;
+  password?: LimitOptions;
 }) {
   const env = getEnv();
   return {
@@ -41,6 +42,11 @@ export function createAuthRateLimiters(options?: {
     register: createLimiter(options?.register ?? {
       windowMs: env.AUTH_REGISTER_WINDOW_MS,
       limit: env.AUTH_REGISTER_LIMIT,
+    }),
+    password: createLimiter(options?.password ?? {
+      windowMs: env.AUTH_LOGIN_WINDOW_MS,
+      limit: env.AUTH_LOGIN_LIMIT,
+      skipSuccessfulRequests: true,
     }),
   };
 }

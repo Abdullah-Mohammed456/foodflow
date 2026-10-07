@@ -19,5 +19,29 @@ server/.env.production.local
 output/
 docs/
 *.md
+/README.md
 client/public/food/
 *.tsbuildinfo
+
+# Agent working files, scratch notes, and editor caches
+AGENTS.md
+CLAUDE.md
+.opencode/
+.claude/
+.codex/
+.cursor/
+.agents/
+.aws/
+.aider*
+.output/
+
+# Build, deploy, and OS artifacts
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+*.log
+.DS_Store
+.vercel/

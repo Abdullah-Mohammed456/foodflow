@@ -19,3 +19,4 @@ authRouter.post("/logout", controller.logout);
 authRouter.get("/access", authenticate, controller.access);
 authRouter.get("/me", authenticate, controller.me);
 authRouter.patch("/me", authenticate, controller.updateMe);
+authRouter.patch("/me/password", authenticate, limits.password, controller.changePassword);
