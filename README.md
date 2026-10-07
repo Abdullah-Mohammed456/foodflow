@@ -230,18 +230,18 @@ The backend integration suite rebuilds the disposable `foodflow_m4_test` databas
 
 ## Screenshots
 
-- 3D Hero Section
-  [text](../../../../..)
-  [text](../../../../..)
-  [text](../../../../..)
-  -Menu
-  [text](../../../../..)
-  -Chekout
-  [text](../../../../..)
-  -Kitchen
-  [text](../../../../..)
-  -Admin
-  [text](../../../../..)
+- 3D Hero Section.
+  ![alt text](client/public/Food-Flow-README-Screenshots/1.png)
+  ![alt text](client/public/Food-Flow-README-Screenshots/2.png)
+  ![alt text](client/public/Food-Flow-README-Screenshots/3.png)
+- Menu
+  ![alt text](client/public/Food-Flow-README-Screenshots/4.png)
+- Chekout
+  ![alt text](client/public/Food-Flow-README-Screenshots/5.png)
+- Kitchen
+  ![alt text](client/public/Food-Flow-README-Screenshots/6.png)
+- Admin
+  ![alt text](client/public/Food-Flow-README-Screenshots/7.png)
 
 ## Roadmap and known limitations
 
