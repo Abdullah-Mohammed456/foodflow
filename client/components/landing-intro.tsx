@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { lockBodyScroll } from "@/lib/scroll-lock";
 
 export function LandingIntro() {
   const root = useRef<HTMLDivElement>(null);
@@ -17,8 +18,7 @@ export function LandingIntro() {
       });
       return () => cancelAnimationFrame(frame);
     }
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const unlock = lockBodyScroll();
     const ctx = gsap.context(() => {
       const bites = element.querySelectorAll<SVGCircleElement>(".intro-bite");
       const loop = gsap.timeline({ repeat: -1 });
@@ -47,7 +47,7 @@ export function LandingIntro() {
           .timeline({
             onComplete: () => {
               setVisible(false);
-              document.body.style.overflow = previousOverflow;
+              unlock();
               window.dispatchEvent(new Event("foodflow:intro-complete"));
             },
           })
@@ -90,7 +90,7 @@ export function LandingIntro() {
     }, element);
     return () => {
       ctx.revert();
-      document.body.style.overflow = previousOverflow;
+      unlock();
     };
   }, []);
   if (!visible) return null;

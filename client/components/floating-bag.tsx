@@ -6,6 +6,7 @@ import { FoodImage as Image } from "@/components/food-image";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
 import { useStaffAccess, useUser } from "@/lib/queries";
+import { lockBodyScroll } from "@/lib/scroll-lock";
 import { human, money } from "@/lib/foodflow";
 
 export function FloatingBag() {
@@ -18,9 +19,7 @@ export function FloatingBag() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
+    return lockBodyScroll();
   }, [open]);
   const total = lines.reduce((sum, line) => sum + Number(line.unitPrice) * line.quantity, 0);
   const close = () => { dialog.current?.close(); setOpen(false); };

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { lockBodyScroll } from "@/lib/scroll-lock";
 
 export function AppLoader({
   done,
@@ -240,13 +241,12 @@ export function AppLoader({
     failRef.current = fail;
     startRef.current = start;
     start();
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const unlock = lockBodyScroll();
     if (latest.current.failed) fail();
     else if (latest.current.done) finish();
     return () => {
       killAll();
-      document.body.style.overflow = previousOverflow;
+      unlock();
     };
   }, []);
 
