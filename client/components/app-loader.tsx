@@ -227,14 +227,23 @@ export function AppLoader({
           gsap.to(guy.current, { y: -5, duration: 0.22, ease: "sine.out", yoyo: true, repeat: -1 }),
         );
       }
-      gsap.to(P, { v: 90, duration: 25, ease: "power2.out", onUpdate: render });
+      gsap.to(P, { v: 82, duration: 18, ease: "power2.out", onUpdate: render });
+      gsap.to(P, {
+        v: 97,
+        duration: 75,
+        delay: 18,
+        ease: "power1.out",
+        onUpdate: render,
+      });
       calls.current.push(
         gsap.delayedCall(4, () => setMsg("Waking up the kitchen (the server was asleep)...")),
       );
       calls.current.push(
-        gsap.delayedCall(12, () => setMsg("Still warming up, almost there...")),
+        gsap.delayedCall(20, () => setMsg("Still warming up, almost there...")),
       );
-      calls.current.push(gsap.delayedCall(30, () => fail()));
+      calls.current.push(
+        gsap.delayedCall(50, () => setMsg("Free-tier servers can take a minute on first load...")),
+      );
     };
 
     finishRef.current = finish;

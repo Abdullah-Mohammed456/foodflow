@@ -45,17 +45,20 @@ export class ApiError extends Error {
 
 export async function apiFetch<T>(
   path: string,
-  init?: RequestInit,
+  init?: RequestInit & { timeoutMs?: number },
 ): Promise<T> {
+  const timeoutMs = init?.timeoutMs ?? 20_000;
+  const fetchInit = { ...init };
+  delete (fetchInit as { timeoutMs?: number }).timeoutMs;
   const res = await fetch(
     `${typeof window === "undefined" ? API_BASE : ""}${path}`,
     {
-      ...init,
-      signal: init?.signal
-        ? AbortSignal.any([init.signal, AbortSignal.timeout(20_000)])
-        : AbortSignal.timeout(20_000),
+      ...fetchInit,
+      signal: fetchInit?.signal
+        ? AbortSignal.any([fetchInit.signal, AbortSignal.timeout(timeoutMs)])
+        : AbortSignal.timeout(timeoutMs),
       credentials: "include",
-      headers: { "content-type": "application/json", ...init?.headers },
+      headers: { "content-type": "application/json", ...fetchInit?.headers },
     },
   );
 

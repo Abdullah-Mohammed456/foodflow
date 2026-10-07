@@ -9,13 +9,30 @@ import {
   type User,
 } from "@/lib/foodflow";
 
+export const COLD_START_TIMEOUT_MS = 60_000;
+
+const coldStartRetryDelay = (attempt: number) =>
+  Math.min(1000 * 2 ** attempt, 8000);
+
+const retryColdStartOnly = (failureCount: number, error: unknown) => {
+  if (
+    error instanceof ApiError &&
+    (error.status === 401 || error.status === 403 || error.status === 404)
+  )
+    return false;
+  return failureCount < 2;
+};
+
 export const useRestaurant = () =>
   useQuery({
     queryKey: ["restaurant", RESTAURANT_SLUG],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       apiFetch<{ restaurant: Restaurant }>(
         `/api/restaurants/public/${RESTAURANT_SLUG}`,
+        { signal, timeoutMs: COLD_START_TIMEOUT_MS },
       ).then((value) => value.restaurant),
+    retry: retryColdStartOnly,
+    retryDelay: coldStartRetryDelay,
   });
 
 export const useMenu = (category = "", search = "", page = 1) =>
@@ -27,16 +44,22 @@ export const useMenu = (category = "", search = "", page = 1) =>
       if (search.trim()) params.set("q", search.trim());
       return apiFetch<PublicMenu>(
         `/api/restaurants/public/${RESTAURANT_SLUG}/menu?${params}`,
-        { signal },
+        { signal, timeoutMs: COLD_START_TIMEOUT_MS },
       );
     },
+    retry: retryColdStartOnly,
+    retryDelay: coldStartRetryDelay,
   });
 
 export const userQueryOptions = {
   queryKey: ["me"],
-  queryFn: () =>
-    apiFetch<{ user: User }>("/api/auth/me").then((value) => value.user),
-  retry: false,
+  queryFn: ({ signal }: { signal: AbortSignal }) =>
+    apiFetch<{ user: User }>("/api/auth/me", {
+      signal,
+      timeoutMs: COLD_START_TIMEOUT_MS,
+    }).then((value) => value.user),
+  retry: retryColdStartOnly,
+  retryDelay: coldStartRetryDelay,
   // Keep an unauthenticated result across child mounts; login replaces this cache.
   retryOnMount: false,
 } as const;
@@ -52,10 +75,11 @@ export function useStaffAccess() {
     queryFn: ({ signal }) =>
       apiFetch<{ role: "OWNER" | "MANAGER" | "KITCHEN" | null }>(
         `/api/auth/access?restaurantId=${id}`,
-        { signal },
+        { signal, timeoutMs: COLD_START_TIMEOUT_MS },
       ),
     enabled: !!user.data && !!id,
-    retry: false,
+    retry: retryColdStartOnly,
+    retryDelay: coldStartRetryDelay,
     staleTime: 60_000,
   });
   const role = access.data?.role;
