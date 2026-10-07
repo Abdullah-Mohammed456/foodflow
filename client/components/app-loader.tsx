@@ -1,79 +1,354 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-function messageFor(elapsed: number) {
-  if (elapsed >= 12000)
-    return "Still warming up, almost there...";
-  if (elapsed >= 4000)
-    return "Waking up the kitchen (the server was asleep)...";
-  return "Getting your table ready...";
-}
+import gsap from "gsap";
 
 export function AppLoader({
-  value,
-  message,
+  done,
   failed,
   onRetry,
+  onFinished,
 }: {
-  value: number;
-  message: string;
+  done: boolean;
   failed: boolean;
   onRetry: () => void;
+  onFinished: () => void;
 }) {
-  const percent = Math.max(0, Math.min(100, Math.round(value)));
+  const screen = useRef<HTMLDivElement>(null);
+  const ld = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const msg = useRef<HTMLSpanElement>(null);
+  const pct = useRef<HTMLElement>(null);
+  const tilt = useRef<HTMLDivElement>(null);
+  const guy = useRef<HTMLDivElement>(null);
+  const legL = useRef<HTMLSpanElement>(null);
+  const legR = useRef<HTMLSpanElement>(null);
+  const armL = useRef<HTMLSpanElement>(null);
+  const armR = useRef<HTMLSpanElement>(null);
+  const stripes = useRef<HTMLElement>(null);
+  const brand = useRef<HTMLDivElement>(null);
+  const err = useRef<HTMLDivElement>(null);
+  const proxy = useRef({ v: 0 });
+  const calls = useRef<{ kill(): void }[]>([]);
+  const loops = useRef<{ kill(): void }[]>([]);
+  const finished = useRef(false);
+  const finishRef = useRef(() => {});
+  const failRef = useRef(() => {});
+  const startRef = useRef(() => {});
+  const latest = useRef({ done, failed, onRetry, onFinished });
+
+  useEffect(() => {
+    latest.current = { done, failed, onRetry, onFinished };
+  });
+
+  useEffect(() => {
+    const RM = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const P = proxy.current;
+    const letters = () =>
+      Array.from(brand.current?.querySelectorAll(".ch > i") ?? []);
+
+    const render = () => {
+      stage.current?.style.setProperty("--p", String(P.v));
+      ld.current?.setAttribute("aria-valuenow", String(Math.round(P.v)));
+      if (pct.current) pct.current.textContent = `${Math.round(P.v)}%`;
+    };
+
+    const setMsg = (text: string) => {
+      if (msg.current) msg.current.textContent = text;
+      if (!RM && msg.current)
+        gsap.fromTo(
+          msg.current,
+          { opacity: 0, y: 6 },
+          { opacity: 1, y: 0, duration: 0.3, overwrite: true },
+        );
+    };
+
+    const killAll = () => {
+      gsap.killTweensOf(P);
+      gsap.killTweensOf([
+        ld.current,
+        screen.current,
+        err.current,
+        tilt.current,
+        guy.current,
+        legL.current,
+        legR.current,
+        armL.current,
+        armR.current,
+        stripes.current,
+        msg.current,
+      ]);
+      calls.current.forEach((call) => call.kill());
+      calls.current = [];
+      loops.current.forEach((loop) => loop.kill());
+      loops.current = [];
+    };
+
+    const exitIn = () => {
+      const tl = gsap.timeline({
+        delay: 0.4,
+        onComplete: () => {
+          latest.current.onFinished();
+        },
+      });
+      if (RM) {
+        tl.to(screen.current, { opacity: 0, duration: 0.2 });
+        return;
+      }
+      tl.call(() => {
+        loops.current.forEach((loop) => loop.kill());
+        gsap.set(
+          [guy.current, legL.current, legR.current, armL.current, armR.current],
+          { rotation: 0, y: 0 },
+        );
+      })
+        .to(guy.current, { y: -46, duration: 0.25, ease: "power2.out" })
+        .to([armL.current], { rotation: 150, duration: 0.25 }, "<")
+        .to([armR.current], { rotation: -150, duration: 0.25 }, "<")
+        .to(guy.current, { y: 0, duration: 0.45, ease: "bounce.out" })
+        .to(
+          tilt.current,
+          { rotationX: 90, y: -30, opacity: 0, duration: 0.5, ease: "power3.in" },
+          "-=.1",
+        )
+        .to(
+          letters(),
+          { yPercent: -110, opacity: 0, stagger: 0.03, duration: 0.35, ease: "power3.in" },
+          "<",
+        )
+        .to(screen.current, { opacity: 0, duration: 0.35 }, "-=.1");
+    };
+
+    const finish = () => {
+      if (finished.current) return;
+      finished.current = true;
+      gsap.killTweensOf(P);
+      calls.current.forEach((call) => call.kill());
+      calls.current = [];
+      setMsg("Ready");
+      gsap.to(P, {
+        v: 100,
+        duration: RM ? 0.1 : 0.5,
+        ease: "power2.out",
+        onUpdate: render,
+        onComplete: exitIn,
+      });
+    };
+
+    const fail = () => {
+      if (finished.current) return;
+      gsap.killTweensOf(P);
+      calls.current.forEach((call) => call.kill());
+      calls.current = [];
+      setMsg("The server is taking too long.");
+      err.current?.setAttribute("data-show", "true");
+      if (!RM && err.current)
+        gsap.fromTo(
+          err.current,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.4 },
+        );
+    };
+
+    const start = () => {
+      killAll();
+      finished.current = false;
+      P.v = 0;
+      render();
+      err.current?.removeAttribute("data-show");
+      gsap.set(
+        [
+          screen.current,
+          ld.current,
+          guy.current,
+          legL.current,
+          legR.current,
+          armL.current,
+          armR.current,
+          msg.current,
+          err.current,
+          ...letters(),
+        ],
+        { clearProps: "all" },
+      );
+      gsap.set(tilt.current, { rotationX: 58, y: 0, opacity: 1 });
+      setMsg("Getting your table ready...");
+      if (!RM) {
+        gsap.fromTo(
+          letters(),
+          { yPercent: 110, opacity: 0 },
+          { yPercent: 0, opacity: 1, stagger: 0.05, duration: 0.6, ease: "power3.out" },
+        );
+        gsap.fromTo(
+          tilt.current,
+          { rotationX: 90, opacity: 0, y: 40 },
+          { rotationX: 58, opacity: 1, y: 0, duration: 1, delay: 0.2, ease: "power3.out" },
+        );
+        gsap.set(stripes.current, { backgroundPosition: "0px 0,0px 0" });
+        loops.current.push(
+          gsap.to(stripes.current, {
+            backgroundPosition: "0px 0,40px 0",
+            duration: 0.8,
+            ease: "none",
+            repeat: -1,
+          }),
+        );
+        gsap.set(guy.current, { rotation: 5 });
+        loops.current.push(
+          gsap.fromTo(
+            legL.current,
+            { rotation: -38 },
+            { rotation: 38, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: -1 },
+          ),
+        );
+        loops.current.push(
+          gsap.fromTo(
+            legR.current,
+            { rotation: 38 },
+            { rotation: -38, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: -1 },
+          ),
+        );
+        loops.current.push(
+          gsap.fromTo(
+            armL.current,
+            { rotation: 45 },
+            { rotation: -45, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: -1 },
+          ),
+        );
+        loops.current.push(
+          gsap.fromTo(
+            armR.current,
+            { rotation: -45 },
+            { rotation: 45, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: -1 },
+          ),
+        );
+        loops.current.push(
+          gsap.to(guy.current, { y: -5, duration: 0.22, ease: "sine.out", yoyo: true, repeat: -1 }),
+        );
+      }
+      gsap.to(P, { v: 90, duration: 25, ease: "power2.out", onUpdate: render });
+      calls.current.push(
+        gsap.delayedCall(4, () => setMsg("Waking up the kitchen (the server was asleep)...")),
+      );
+      calls.current.push(
+        gsap.delayedCall(12, () => setMsg("Still warming up, almost there...")),
+      );
+      calls.current.push(gsap.delayedCall(30, () => fail()));
+    };
+
+    finishRef.current = finish;
+    failRef.current = fail;
+    startRef.current = start;
+    start();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (latest.current.failed) fail();
+    else if (latest.current.done) finish();
+    return () => {
+      killAll();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (done) finishRef.current();
+  }, [done]);
+  useEffect(() => {
+    if (failed) failRef.current();
+  }, [failed]);
+
+  const handleRetry = () => {
+    latest.current.onRetry();
+    startRef.current();
+  };
+
   return (
-    <div className="ff-loader-screen">
+    <div className="ff-loader-screen" ref={screen}>
       <div
-        className="ff-loader"
+        className="ld"
+        ref={ld}
         role="progressbar"
         aria-label="Loading"
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={percent}
+        aria-valuenow={0}
       >
-        <div className="ff-loader-brand" aria-hidden="true">
-          FOOD <span>FLOW</span>
+        <div className="brand" ref={brand} aria-hidden="true">
+          {"FOOD".split("").map((c, i) => (
+            <span className="ch" key={`food-${i}`}>
+              <i>{c}</i>
+            </span>
+          ))}{" "}
+          {"FLOW".split("").map((c, i) => (
+            <span className="ch" key={`flow-${i}`}>
+              <i style={{ color: "var(--ff-orange)" }}>{c}</i>
+            </span>
+          ))}
         </div>
-        <div className="ff-loader-stage">
-          <div className="ff-loader-tilt">
-            <div className="ff-loader-slab" style={{ ["--p" as string]: percent }}>
-              <div className="ff-loader-shadow" aria-hidden="true" />
-              <div className="ff-loader-base" aria-hidden="true">
-                <i className="ff-loader-base-top" />
-                <i className="ff-loader-base-front" />
-              </div>
-              <div className="ff-loader-fill" aria-hidden="true">
-                <i className="ff-loader-fill-top" />
-                <i className="ff-loader-fill-front" />
-              </div>
-              <div className="ff-loader-rider" aria-hidden="true">
-                <div className="ff-loader-guy">
-                  <span className="ff-loader-bun">
-                    <i className="ff-loader-eye ff-loader-eye-l" />
-                    <i className="ff-loader-eye ff-loader-eye-r" />
-                    <i className="ff-loader-mouth" />
-                  </span>
-                  <span className="ff-loader-patty" />
-                  <span className="ff-loader-base-bun" />
-                  <span className="ff-loader-leg ff-loader-leg-l" />
-                  <span className="ff-loader-leg ff-loader-leg-r" />
+        <div className="stage" ref={stage} style={{ "--p": 0 } as React.CSSProperties}>
+          <div className="tilt" ref={tilt}>
+            <div className="spin">
+              <div className="slab">
+                <div className="shadow" />
+                <div className="box base">
+                  <i className="f top" />
+                  <i className="f front" />
+                  <i className="f end" />
+                </div>
+                <div className="fill">
+                  <i className="f top" ref={stripes} />
+                  <i className="f front" />
+                  <i className="f end" />
+                </div>
+                <div className="rider">
+                  <div className="stand">
+                    <div className="guy" ref={guy}>
+                      <span className="leg l" ref={legL} />
+                      <span className="leg r" ref={legR} />
+                      <span className="arm l" ref={armL} />
+                      <span className="arm r" ref={armR} />
+                      <span className="bun">
+                        <b className="seed" style={{ left: 22, top: 3 }} />
+                        <b className="seed" style={{ left: 38, top: 2 }} />
+                        <b className="seed" style={{ left: 54, top: 4 }} />
+                        <b className="seed" style={{ left: 10, top: 9 }} />
+                        <b className="seed" style={{ left: 64, top: 10 }} />
+                        <b className="brow l" />
+                        <b className="brow r" />
+                        <b className="eye l">
+                          <u />
+                        </b>
+                        <b className="eye r">
+                          <u />
+                        </b>
+                        <b className="nose" />
+                        <b className="cheek l" />
+                        <b className="cheek r" />
+                        <b className="mouth" />
+                      </span>
+                      <span className="lt" />
+                      <span className="cz" />
+                      <span className="pt" />
+                      <span className="bb2" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="ff-loader-meta">
-          <span aria-live="polite">{failed ? "The server is taking too long." : message}</span>
-          <b>{percent}%</b>
+        <div className="meta">
+          <span aria-live="polite" ref={msg}>
+            Getting your table ready...
+          </span>
+          <b ref={pct}>0%</b>
         </div>
-        {failed && (
-          <div className="ff-loader-error">
-            <button className="ff-loader-retry" type="button" onClick={onRetry}>
-              Retry
-            </button>
-          </div>
-        )}
+        <div className="err" ref={err}>
+          <div>The server is taking too long.</div>
+          <button className="retry" type="button" onClick={handleRetry}>
+            Retry
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -91,102 +366,25 @@ export function AppLoaderGate({
   children: React.ReactNode;
 }) {
   const [visible, setVisible] = useState(false);
-  const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
-  const [value, setValue] = useState(0);
-  const [elapsed, setElapsed] = useState(0);
-  const [timedOut, setTimedOut] = useState(false);
-  const progress = useRef(0);
-  const startAt = useRef(0);
 
   useEffect(() => {
-    if (done && !failed) return;
-    const t = window.setTimeout(() => setVisible(true), 300);
+    if (done) return;
+    const t = window.setTimeout(() => setVisible(true), failed ? 0 : 300);
     return () => window.clearTimeout(t);
   }, [done, failed]);
 
-  useEffect(() => {
-    if (gone) return;
-    startAt.current = Date.now();
-    const tick = window.setInterval(() => {
-      const run = Date.now() - startAt.current;
-      setElapsed(run);
-      if (done) {
-        progress.current = 100;
-        setValue(100);
-        return;
-      }
-      if (failed) return;
-      progress.current += (90 - progress.current) * 0.04;
-      setValue(progress.current);
-      if (run >= 30000) setTimedOut(true);
-    }, 100);
-    return () => window.clearInterval(tick);
-  }, [done, failed, gone]);
-
-  useEffect(() => {
-    if (!done || failed || gone) return;
-    progress.current = 100;
-    const wait = window.setTimeout(() => {
-      setValue(100);
-      setLeaving(true);
-    }, 400);
-    const hide = window.setTimeout(() => setGone(true), 800);
-    return () => {
-      window.clearTimeout(wait);
-      window.clearTimeout(hide);
-    };
-  }, [done, failed, gone]);
-
-  const showError = failed || timedOut;
-  const message = messageFor(elapsed);
-
-  if (gone && !showError) return <>{children}</>;
-  if (!visible && !showError) {
-    if (done) return <>{children}</>;
-    return null;
-  }
-  if (done && !showError && leaving) {
-    return (
-      <>
-        <div style={{ visibility: "hidden" }}>{children}</div>
-        <div className="ff-loader-screen" data-leaving="true">
-          <div
-            className="ff-loader"
-            role="progressbar"
-            aria-label="Loading"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={100}
-          >
-            <div className="ff-loader-brand" aria-hidden="true">
-              FOOD <span>FLOW</span>
-            </div>
-            <div className="ff-loader-meta">
-              <span aria-live="polite">Ready</span>
-              <b>100%</b>
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
-  if (done && !showError) return <>{children}</>;
+  if (gone) return <>{children}</>;
+  if (!visible) return done ? <>{children}</> : null;
+  if (done) return <>{children}</>;
   return (
     <>
-      <div aria-hidden="true" style={{ visibility: "hidden", position: "fixed", inset: 0, overflow: "hidden" }} />
+      {children}
       <AppLoader
-        value={showError ? value : Math.min(value, 99)}
-        message={message}
-        failed={showError}
-        onRetry={() => {
-          progress.current = 0;
-          startAt.current = Date.now();
-          setValue(0);
-          setElapsed(0);
-          setTimedOut(false);
-          onRetry();
-        }}
+        done={done}
+        failed={failed}
+        onRetry={onRetry}
+        onFinished={() => setGone(true)}
       />
     </>
   );
