@@ -231,17 +231,17 @@ The backend integration suite rebuilds the disposable `foodflow_m4_test` databas
 ## Screenshots
 
 - 3D Hero Section.
-  ![alt text](client/public/Food-Flow-README-Screenshots/1.png)
-  ![alt text](client/public/Food-Flow-README-Screenshots/2.png)
-  ![alt text](client/public/Food-Flow-README-Screenshots/3.png)
+  ![FoodFlow landing page with the 3D hero section](client/public/Food-Flow-README-Screenshots/1.png)
+  ![FoodFlow landing page, second hero view](client/public/Food-Flow-README-Screenshots/2.png)
+  ![FoodFlow landing page, third hero view](client/public/Food-Flow-README-Screenshots/3.png)
 - Menu
-  ![alt text](client/public/Food-Flow-README-Screenshots/4.png)
-- Chekout
-  ![alt text](client/public/Food-Flow-README-Screenshots/5.png)
+  ![FoodFlow menu page](client/public/Food-Flow-README-Screenshots/4.png)
+- Checkout
+  ![FoodFlow checkout page](client/public/Food-Flow-README-Screenshots/5.png)
 - Kitchen
-  ![alt text](client/public/Food-Flow-README-Screenshots/6.png)
+  ![FoodFlow kitchen order board](client/public/Food-Flow-README-Screenshots/6.png)
 - Admin
-  ![alt text](client/public/Food-Flow-README-Screenshots/7.png)
+  ![FoodFlow admin dashboard](client/public/Food-Flow-README-Screenshots/7.png)
 
 ## Roadmap and known limitations
 
